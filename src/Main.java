@@ -33,50 +33,33 @@ public class Main {
 
     Trainer trainer = null;
 
-    /**
-     * Check if there is a saved game
-     * Ask the user if they want to load the saved game
-     * or start a new game
-     */
-    File[] savedGame = getSavedGame();
+    // Check if there is a saved game
+    File[] savedGame = Game.getSavedGame();
     if (savedGame != null) {
       System.out.println("Found " + savedGame.length + " saved game(s)");
+      System.out.println();
 
-      // Ask the user if they want to load the saved game
-      System.out.print("Do you want to load a saved game? (y/n) ");
-      String answer;
-      do {
-        answer = reader.nextLine();
-        // If yes, load the game
-        if (answer.toLowerCase().equals("y")) {
-          System.out.println();
-          System.out.println("Which game do you want to load? ");
-          // list all the saved games
-          for (int i = 0; i < savedGame.length; i++) {
-            System.out.println(i + 1 + ". " + savedGame[i].getName());
-          }
-          System.out.print("-> ");
+      // list all the saved games
+      System.out.println("0. Start a new game");
+      for (int i = 0; i < savedGame.length; i++) {
+        System.out.println(i + 1 + ". " + savedGame[i].getName());
+      }
+      System.out.print("-> ");
 
-          int gameNumber = reader.nextInt();
-          reader.nextLine(); // Consume the newline character
+      int gameNumber = reader.nextInt();
+      reader.nextLine(); // Consume the newline character
 
-          // Deserialize the saved game
-          trainer = (Trainer) Serializer.deserialize(savedGame[gameNumber -
-              1].getName());
-
-          System.out.println("Game loaded !");
-          break;
-
-        }
-        // If no, start a new game
-        else if (answer.toLowerCase().equals("n")) {
-          System.out.println();
-          System.out.println("Starting a new game");
-          System.out.println();
-          trainer = createNewTrainer();
-          break;
-        }
-      } while (answer != "y" || answer != "n");
+      if (gameNumber == 0) {
+        System.out.println();
+        System.out.println("Starting a new game");
+        System.out.println();
+        trainer = createNewTrainer();
+      } else {
+        // Deserialize the saved game
+        trainer = (Trainer) Serializer.deserialize(savedGame[gameNumber -
+            1].getName());
+        System.out.println("Game loaded !");
+      }
 
     }
     /**
@@ -107,65 +90,9 @@ public class Main {
     System.out.println("New trainer created. Welcome " + trainer.getName() + "!");
 
     // Save the game
-    saveGame(trainer);
+    Game.saveGame(trainer);
 
     return trainer;
-  }
-
-  /**
-   * Save the game to a file in the saves folder
-   */
-  private static void saveGame(Trainer trainer) {
-    System.out.println();
-
-    boolean canSave = false;
-
-    if (!Serializer.fileExists(trainer.getName())) {
-      canSave = true;
-    } else {
-      System.out.println("A saved game with the same name already exists.");
-      System.out.print("Do you want to overwrite the saved game? (y/n) ");
-      String answer;
-      do {
-        answer = reader.nextLine();
-        if (answer.toLowerCase().equals("y")) {
-          canSave = true;
-          break;
-        } else {
-          System.out.println("Saving game aborted");
-          return;
-        }
-      } while (answer != "y" || answer != "n");
-    }
-
-    if (!canSave) {
-      return;
-    }
-
-    System.out.println("Saving game...");
-
-    // ArrayList<Object> dataToSave = new ArrayList<>();
-    // dataToSave.add(trainer);
-    Serializer.serialize(trainer.getName(), trainer);
-
-    System.out.println("Game saved !");
-    System.out.println();
-  }
-
-  /**
-   * Check if there is a saved game in the saves folder.
-   * Return the list of files in the saves folder if there is.
-   * Return null if there is no saved game.
-   */
-  private static File[] getSavedGame() {
-    File folder = new File("./saves");
-    File[] listOfFiles = folder.listFiles();
-
-    if (listOfFiles.length == 0) {
-      return null;
-    } else {
-      return listOfFiles;
-    }
   }
 
   /**
