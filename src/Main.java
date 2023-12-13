@@ -1,35 +1,18 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Main {
-  static ArrayList<Pokemon> pokedex = new ArrayList<>();
-  static Scanner reader = new Scanner(System.in);
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
-  // public static Trainer trainer;
+public class Main {
+  static Pokedex pokedex = new Pokedex();
+  static Scanner reader = new Scanner(System.in);
 
   public static void main(String[] args) {
     System.out.println();
 
-    // Load all existing pokemons from a csv file into the pokedex.
-    try {
-      loadPokemon();
-    } catch (FileNotFoundException e) {
-      System.out.println("File not found");
-    } catch (IOException e) {
-      System.out.println("IO Exception");
-    }
-    System.out.println("[LOG] Loaded " + pokedex.size() + " pokemons");
-
-    // for (Pokemon pokemon : pokedex) {
-    // System.out.println(pokemon);
-    // }
-    // System.out.println();
-    System.out.println();
+    PlayMusic("./assets/JubilifeCityNight8bit.wav");
 
     Trainer trainer = null;
 
@@ -71,14 +54,16 @@ public class Main {
       trainer = createNewTrainer();
     }
 
-    Game game = new Game(trainer, pokedex);
+    Game game = new Game(trainer);
     game.start();
 
     System.out.println();
   }
 
   /**
-   * Create a new game
+   * Create a new trainer and save it
+   * 
+   * @return The new trainer created
    */
   private static Trainer createNewTrainer() {
     // Ask the user for their name
@@ -96,33 +81,29 @@ public class Main {
   }
 
   /**
-   * Load all existing pokemons from a csv file into the pokedex.
+   * Play a music file
    * 
-   * @throws IOException
-   * @throws FileNotFoundException
+   * @param location
    */
-  private static void loadPokemon() throws FileNotFoundException, IOException {
-    try (BufferedReader br = new BufferedReader(new FileReader("./assets/pokemons.csv"))) {
-      String line;
-      boolean isFirstLine = true; // Flag to skip the header line
-      while ((line = br.readLine()) != null) {
-        if (isFirstLine) {
-          isFirstLine = false;
-          continue; // Skip the header line
-        }
+  public static void PlayMusic(String location) {
+    try {
+      File musicPath = new File(location);
 
-        // Create a new Pokemon for each line and add it to the Pokedex
-        String[] data = line.split(",");
-
-        int id = Integer.parseInt(data[0]);
-        String name = data[1];
-        int hp = Integer.parseInt(data[2]);
-        int attack = Integer.parseInt(data[3]);
-        String type = data[4];
-
-        Pokemon pokemon = new Pokemon(id, name, hp, attack, PokemonType.valueOf(type.toUpperCase()));
-        pokedex.add(pokemon);
+      if (musicPath.exists()) {
+        AudioInputStream ais = AudioSystem.getAudioInputStream(musicPath);
+        Clip clip = AudioSystem.getClip();
+        clip.open(ais);
+        clip.loop(Clip.LOOP_CONTINUOUSLY);
+        clip.start();
+      } else {
+        System.out.println("Can't find music file");
       }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
+
+  public static void Logger(String message) {
+    System.out.println("[LOG] " + message);
   }
 }

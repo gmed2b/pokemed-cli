@@ -1,36 +1,37 @@
+import java.io.Serializable;
 
 /**
  * Pokemon
  * 
  * Represents a Pokemon
  */
-public class Pokemon {
-  private int id;
+public class Pokemon implements Serializable {
   private String name;
   private int hp;
   private int attack;
   private PokemonType type;
+  private int evolutionStage;
 
   /**
    * Constructor
    * 
-   * @param id     The Pokemon's ID
-   * @param name   The Pokemon's name
-   * @param hp     The Pokemon's HP
-   * @param attack The Pokemon's attack
-   * @param type   The Pokemon's type
+   * @param name           The Pokemon's name
+   * @param hp             The Pokemon's HP
+   * @param attack         The Pokemon's attack
+   * @param type           The Pokemon's type
+   * @param evolutionStage The Pokemon's evolution stage
    */
-  public Pokemon(int id, String name, int hp, int attack, PokemonType type) {
-    setId(id);
+  public Pokemon(String name, int hp, int attack, PokemonType type, int evolutionStage) {
     setName(name);
     setHp(hp);
     setAttack(attack);
     setType(type);
+    setEvolutionStage(evolutionStage);
   }
 
   @Override
   public String toString() {
-    return String.format("%s <%d> %s (HP: %d, Attack: %d)", this.type.getEmojiType(), getId(), getName(), getHp(),
+    return String.format("%s %s (HP: %d, Attack: %d)", this.type.getEmojiType(), getName(), getHp(),
         getAttack());
   }
 
@@ -75,18 +76,20 @@ public class Pokemon {
   /**
    * Evolve the Pokemon
    * 
-   * @throws UnsupportedOperationException If the Pokemon cannot * evolve
+   * @throws UnsupportedOperationException If the Pokemon cannot evolve
    */
   public void evolve() {
     System.out.println("Evolving pokemon ...");
   }
 
-  public int getId() {
-    return id;
-  }
+  public static Pokemon getRandomPokemon() {
+    Pokemon wildPokemon = null;
+    do {
+      int random = (int) (Math.random() * Pokedex.getPokedex().size());
+      wildPokemon = Pokedex.getPokedex().get(random);
+    } while (wildPokemon.getEvolutionStage() > 1);
 
-  public void setId(int id) {
-    this.id = id;
+    return wildPokemon;
   }
 
   public String getName() {
@@ -129,4 +132,13 @@ public class Pokemon {
   public void setType(PokemonType type) {
     this.type = type;
   }
+
+  public int getEvolutionStage() {
+    return evolutionStage;
+  }
+
+  public void setEvolutionStage(int evolutionStage) {
+    this.evolutionStage = evolutionStage;
+  }
+
 }
