@@ -25,10 +25,7 @@ public class Main {
       for (int i = 0; i < savedGame.length; i++) {
         System.out.println(i + 1 + ". " + savedGame[i].getName());
       }
-      System.out.print("-> ");
-
-      int gameNumber = reader.nextInt();
-      reader.nextLine(); // Consume the newline character
+      int gameNumber = getIntInput();
 
       if (gameNumber == 0) {
         System.out.println();
@@ -42,11 +39,7 @@ public class Main {
         System.out.println("Game loaded !");
       }
 
-    }
-    /**
-     * No saved game found, start a new game
-     */
-    else {
+    } else {
       System.out.println("No saved game found, starting a new game");
       System.out.println();
       trainer = createNewTrainer();
@@ -76,6 +69,27 @@ public class Main {
     Game.saveGame(trainer);
 
     return trainer;
+  }
+
+  /**
+   * Get an integer input from the user
+   * 
+   * @return The integer input
+   */
+  public static int getIntInput() {
+    System.out.print("-> ");
+    int choice = reader.nextInt();
+    reader.nextLine(); // Consume the \n character
+    return choice;
+  }
+
+  /**
+   * Display a message and wait for the user to press enter
+   */
+  public static void pressToContinue() {
+    System.out.println();
+    System.out.print("press enter to continue...");
+    reader.nextLine();
   }
 
   /**

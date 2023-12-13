@@ -12,7 +12,7 @@ public class Trainer implements Serializable {
 
   @Override
   public String toString() {
-    return "Trainer [name=" + name + ", pokemons=" + pokemons + ", rareCandies=" + rareCandies + "]";
+    return "Trainer [name=" + name + ", rareCandies=" + rareCandies + "]";
   }
 
   /**
@@ -38,6 +38,7 @@ public class Trainer implements Serializable {
       // 45% chance to drop a rare candy of the pokemon's type
       if (Math.random() < 0.45) {
         RareCandy rareCandy = new RareCandy(pokemon.getType());
+        rareCandies.add(rareCandy);
         System.out.println("The pokemon dropped a rare candy !");
         return rareCandy;
       }

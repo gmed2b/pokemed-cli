@@ -26,8 +26,7 @@ public class Game {
       displayMainMenu();
 
       // Get the user's choice
-      System.out.print("-> ");
-      int choice = Main.reader.nextInt();
+      int choice = Main.getIntInput();
       System.out.println();
 
       switch (choice) {
@@ -41,7 +40,7 @@ public class Game {
           startOnlineBattle();
           break;
         case 4:
-          // Free a pokemon
+          listBackpackItems();
           break;
         case 8:
           listPokedex();
@@ -71,7 +70,7 @@ public class Game {
     System.out.println("1. Catch a pokemon");
     System.out.println("2. List owned pokemons");
     System.out.println("3. Start a battle");
-    System.out.println("4. Free a pokemon");
+    System.out.println("4. List backpack's items");
     System.out.println();
     System.out.println("8. List all pokemons in the pokedex");
     System.out.println("9. Save the game");
@@ -85,7 +84,7 @@ public class Game {
     System.out.println("Entering the wild ...");
 
     try {
-      Thread.sleep(1400);
+      Thread.sleep(400);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -95,12 +94,11 @@ public class Game {
     System.out.println();
     System.out.println("1. Catch");
     System.out.println("2. Run");
-    System.out.print("-> ");
-
-    int choice = Main.reader.nextInt();
+    int choice = Main.getIntInput();
     switch (choice) {
       case 1:
         trainer.catchPokemon(wildPokemon);
+        Main.pressToContinue();
         break;
       case 2:
       default:
@@ -116,8 +114,7 @@ public class Game {
     trainer.listOwnedPokemons();
     System.out.println();
     System.out.println("0. Back");
-    System.out.print("-> ");
-    int backChoice = Main.reader.nextInt();
+    int backChoice = Main.getIntInput();
     // Add a way to select a pokemon and display its profile
     if (backChoice != 0 && backChoice <= trainer.getPokemons().size()) {
       Pokemon selectedPokemon = trainer.getPokemons().get(backChoice - 1);
@@ -137,16 +134,34 @@ public class Game {
     }
   }
 
+  private void listBackpackItems() {
+    System.out.println("--------- Backpack ---------");
+    System.out.println();
+    for (PokemonType type : PokemonType.values()) {
+      int count = 0;
+      for (RareCandy rareCandy : trainer.getRareCandies()) {
+        if (rareCandy.getType() == type) {
+          count++;
+        }
+      }
+      if (count > 0) {
+        System.out.println(String.format("%s %s: %d", type.getEmojiType(), type.toString(), count));
+      }
+    }
+    Main.pressToContinue();
+  }
+
   /**
    * List all pokemons in the pokedex
    */
   private void listPokedex() {
     System.out.println("--------- Pokedex ---------");
     System.out.println();
-
     for (Pokemon pokemon : Pokedex.getPokedex()) {
       System.out.println(pokemon);
     }
+    Main.pressToContinue();
+
   }
 
   // ------------------

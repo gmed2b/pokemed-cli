@@ -12,6 +12,11 @@ public class RareCandy implements Serializable {
     setType(type);
   }
 
+  @Override
+  public String toString() {
+    return String.format("Rare Candy: %s", type.getEmojiType());
+  }
+
   public PokemonType getType() {
     return type;
   }

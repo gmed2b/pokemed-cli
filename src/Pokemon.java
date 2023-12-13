@@ -114,8 +114,7 @@ public class Pokemon implements Serializable {
     System.out.println("1. Edit name");
     // 2. eat candy
     System.out.println("0. Back");
-    System.out.print("-> ");
-    int choice = Integer.parseInt(Main.reader.nextLine());
+    int choice = Main.getIntInput();
     switch (choice) {
       case 1:
         System.out.print("New name: ");
@@ -123,7 +122,6 @@ public class Pokemon implements Serializable {
         setName(newName);
         System.out.println("Name changed !");
         break;
-
       case 0:
       default:
         break;
