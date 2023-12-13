@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Pokemon
@@ -11,6 +12,7 @@ public class Pokemon implements Serializable {
   private int attack;
   private PokemonType type;
   private int evolutionStage;
+  private ArrayList<Pokemon> evolution = new ArrayList<>();
 
   /**
    * Constructor
@@ -20,13 +22,15 @@ public class Pokemon implements Serializable {
    * @param attack         The Pokemon's attack
    * @param type           The Pokemon's type
    * @param evolutionStage The Pokemon's evolution stage
+   * @param evolution      The Pokemon's evolution
    */
-  public Pokemon(String name, int hp, int attack, PokemonType type, int evolutionStage) {
+  public Pokemon(String name, int hp, int attack, PokemonType type, int evolutionStage, ArrayList<Pokemon> evolution) {
     setName(name);
     setHp(hp);
     setAttack(attack);
     setType(type);
     setEvolutionStage(evolutionStage);
+    setEvolution(evolution);
   }
 
   @Override
@@ -37,9 +41,7 @@ public class Pokemon implements Serializable {
 
   /**
    * Eat a certain amount of candy to increase HP and attack
-   * <p>
    * Can evolve if 5 candies are eaten
-   * </p>
    * 
    * @param amount The amount of candy to eat
    */
@@ -82,6 +84,11 @@ public class Pokemon implements Serializable {
     System.out.println("Evolving pokemon ...");
   }
 
+  /**
+   * Get a random Pokemon from the Pokedex
+   * 
+   * @return A random first stage Pokemon
+   */
   public static Pokemon getRandomPokemon() {
     Pokemon wildPokemon = null;
     do {
@@ -139,6 +146,14 @@ public class Pokemon implements Serializable {
 
   public void setEvolutionStage(int evolutionStage) {
     this.evolutionStage = evolutionStage;
+  }
+
+  public ArrayList<Pokemon> getEvolution() {
+    return evolution;
+  }
+
+  public void setEvolution(ArrayList<Pokemon> evolution) {
+    this.evolution = evolution;
   }
 
 }
