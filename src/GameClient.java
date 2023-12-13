@@ -5,10 +5,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 public class GameClient {
-  private Trainer trainer;
-
   public GameClient(Trainer trainer) {
-    this.trainer = trainer;
     connectToServer();
   }
 

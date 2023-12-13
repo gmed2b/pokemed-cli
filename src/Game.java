@@ -108,11 +108,11 @@ public class Game {
     int catchChoice = Integer.parseInt(Main.reader.nextLine());
     System.out.println();
     if (catchChoice == 0) {
-      // if (pokemon.catchPokemon()) {
+      // if (trainer.catchPokemon()) {
       this.trainer.addPokemon(wildPokemon);
       System.out.println("You caught " + wildPokemon.getName() + " !");
       // } else {
-      // System.out.println("You failed to catch " + pokemon.getName() + " !");
+      // System.out.println("You failed to catch " + wildPokemon.getName() + " !");
       // }
     } else {
       // Run away
@@ -131,9 +131,10 @@ public class Game {
     int backChoice = Integer.parseInt(Main.reader.nextLine());
     // Add a way to select a pokemon and display its profile
     if (backChoice != 0 && backChoice <= trainer.getPokemons().size()) {
-      System.out.println(trainer.getPokemons().get(backChoice - 1));
+      Pokemon selectedPokemon = trainer.getPokemons().get(backChoice - 1);
+      System.out.println();
+      selectedPokemon.editPokemon();
     }
-    // Modify the pokemon's name
   }
 
   /**

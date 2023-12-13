@@ -81,7 +81,14 @@ public class Pokemon implements Serializable {
    * @throws UnsupportedOperationException If the Pokemon cannot evolve
    */
   public void evolve() {
-    System.out.println("Evolving pokemon ...");
+    System.out.println(getName() + " is evolving ...");
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    System.out.println("Congratulations !");
+    System.out.println(getName() + " evolved into " + getEvolution().get(0).getName() + " !");
   }
 
   /**
@@ -98,6 +105,34 @@ public class Pokemon implements Serializable {
 
     return wildPokemon;
   }
+
+  /**
+   * Edit the Pokemon
+   */
+  public void editPokemon() {
+    System.out.println("Editing " + this);
+    System.out.println("1. Edit name");
+    // 2. eat candy
+    System.out.println("0. Back");
+    System.out.print("-> ");
+    int choice = Integer.parseInt(Main.reader.nextLine());
+    switch (choice) {
+      case 1:
+        System.out.print("New name: ");
+        String newName = Main.reader.nextLine();
+        setName(newName);
+        System.out.println("Name changed !");
+        break;
+
+      case 0:
+      default:
+        break;
+    }
+  }
+
+  // ------------------
+  // Getters and setters
+  // ------------------
 
   public String getName() {
     return name;
