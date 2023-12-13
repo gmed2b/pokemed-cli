@@ -24,7 +24,7 @@ public class Pokemon implements Serializable {
    * @param evolutionStage The Pokemon's evolution stage
    * @param evolution      The Pokemon's evolution
    */
-  public Pokemon(String name, int hp, int attack, PokemonType type, int evolutionStage, ArrayList<Pokemon> evolution) {
+  public Pokemon(String name, int hp, int attack, PokemonType type, int evolutionStage) {
     setName(name);
     setHp(hp);
     setAttack(attack);
@@ -35,8 +35,8 @@ public class Pokemon implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("%s %s (HP: %d, Attack: %d)", this.type.getEmojiType(), getName(), getHp(),
-        getAttack());
+    return String.format("%s %s (HP: %d, Attack: %d) %s", this.type.getEmojiType(), getName(), getHp(),
+        getAttack(), getEvolution());
   }
 
   /**

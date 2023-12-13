@@ -17,9 +17,36 @@ public class Trainer implements Serializable {
 
   /**
    * Catch a pokemon randomly
+   * 
+   * @param pokemon The pokemon to catch
+   * @return A chance to drop a rare candy of the pokemon's type
    */
-  private void catchPokemon() {
-    //
+  public RareCandy catchPokemon(Pokemon pokemon) {
+    // 75% chance to catch the pokemon
+    if (Math.random() < 0.75) {
+      System.out.println("You caught " + pokemon);
+
+      // Add the pokemon to the trainer's pokemons (if possible)
+      try {
+        addPokemon(pokemon);
+      } catch (UnsupportedOperationException e) {
+        System.out.println("You can't have more than 6 pokemons");
+        System.out.println("The pokemon escaped");
+        return null;
+      }
+
+      // 45% chance to drop a rare candy of the pokemon's type
+      if (Math.random() < 0.45) {
+        RareCandy rareCandy = new RareCandy(pokemon.getType());
+        System.out.println("The pokemon dropped a rare candy !");
+        return rareCandy;
+      }
+
+      return null;
+    } else {
+      System.out.println("The pokemon escaped");
+      return null;
+    }
   }
 
   /**
@@ -36,10 +63,11 @@ public class Trainer implements Serializable {
    * Add a pokemon to the trainer's pokemons
    * 
    * @param pokemon The pokemon to add
+   * @throws UnsupportedOperationException If the trainer already have 6 pokemons
    */
   public void addPokemon(Pokemon pokemon) {
     if (pokemons.size() >= 6) {
-      throw new IllegalArgumentException("A trainer can't have more than 6 pokemons");
+      throw new UnsupportedOperationException("A trainer can't have more than 6 pokemons");
     }
     pokemons.add(pokemon);
   }

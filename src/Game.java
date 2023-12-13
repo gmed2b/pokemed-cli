@@ -18,6 +18,8 @@ public class Game {
     System.out.println("You can also battle with other trainers");
     System.out.println();
 
+    // Main.PlayMusic("./assets/JubilifeCityNight8bit.wav");
+
     // Main loop
     while (true) {
       // Display the main menu
@@ -25,18 +27,15 @@ public class Game {
 
       // Get the user's choice
       System.out.print("-> ");
-      int choice = Integer.parseInt(Main.reader.nextLine());
+      int choice = Main.reader.nextInt();
       System.out.println();
 
       switch (choice) {
-        case 0:
+        case 1:
           catchAPokemon();
           break;
-        case 1:
-          listOwnedPokemons();
-          break;
         case 2:
-          // Level-up a pokemon
+          listOwnedPokemons();
           break;
         case 3:
           startOnlineBattle();
@@ -44,22 +43,14 @@ public class Game {
         case 4:
           // Free a pokemon
           break;
-        case 5:
-          trainerProfile();
-          break;
-        case 6:
+        case 8:
           listPokedex();
           break;
-        case 7:
+        case 9:
           saveGame(trainer);
           break;
-        case 8:
-          // Exit
-          System.out.println("Exiting ...");
-          System.exit(0);
-          break;
+        case 0:
         default:
-          System.out.println("Invalid choice");
           System.out.println("Exiting ...");
           System.exit(0);
           break;
@@ -77,16 +68,14 @@ public class Game {
     System.out.println();
     System.out.println(String.format("--- %s's Profile ---", this.trainer.getName()));
     System.out.println();
-    System.out.println("0. Catch a pokemon");
-    System.out.println("1. List owned pokemons");
-    System.out.println("2. Level-up a pokemon");
+    System.out.println("1. Catch a pokemon");
+    System.out.println("2. List owned pokemons");
     System.out.println("3. Start a battle");
     System.out.println("4. Free a pokemon");
     System.out.println();
-    System.out.println("5. Trainer profile");
-    System.out.println("6. List all pokemons in the pokedex");
-    System.out.println("7. Save the game");
-    System.out.println("8. Exit");
+    System.out.println("8. List all pokemons in the pokedex");
+    System.out.println("9. Save the game");
+    System.out.println("0. Exit");
   }
 
   /**
@@ -94,29 +83,29 @@ public class Game {
    */
   private void catchAPokemon() {
     System.out.println("Entering the wild ...");
+
     try {
       Thread.sleep(1400);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
     Pokemon wildPokemon = Pokemon.getRandomPokemon();
+
     System.out.println("A wild " + wildPokemon.getName() + " appeared !");
     System.out.println();
-    System.out.println("0. Catch");
-    System.out.println("1. Run");
+    System.out.println("1. Catch");
+    System.out.println("2. Run");
     System.out.print("-> ");
-    int catchChoice = Integer.parseInt(Main.reader.nextLine());
-    System.out.println();
-    if (catchChoice == 0) {
-      // if (trainer.catchPokemon()) {
-      this.trainer.addPokemon(wildPokemon);
-      System.out.println("You caught " + wildPokemon.getName() + " !");
-      // } else {
-      // System.out.println("You failed to catch " + wildPokemon.getName() + " !");
-      // }
-    } else {
-      // Run away
-      System.out.println("You ran away");
+
+    int choice = Main.reader.nextInt();
+    switch (choice) {
+      case 1:
+        trainer.catchPokemon(wildPokemon);
+        break;
+      case 2:
+      default:
+        System.out.println("You ran away");
+        break;
     }
   }
 
@@ -128,7 +117,7 @@ public class Game {
     System.out.println();
     System.out.println("0. Back");
     System.out.print("-> ");
-    int backChoice = Integer.parseInt(Main.reader.nextLine());
+    int backChoice = Main.reader.nextInt();
     // Add a way to select a pokemon and display its profile
     if (backChoice != 0 && backChoice <= trainer.getPokemons().size()) {
       Pokemon selectedPokemon = trainer.getPokemons().get(backChoice - 1);
@@ -149,17 +138,9 @@ public class Game {
   }
 
   /**
-   * Display the trainer's profile
-   */
-  private void trainerProfile() {
-    System.out.println(this.trainer);
-  }
-
-  /**
    * List all pokemons in the pokedex
    */
   private void listPokedex() {
-    System.out.println();
     System.out.println("--------- Pokedex ---------");
     System.out.println();
 

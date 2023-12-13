@@ -12,8 +12,6 @@ public class Main {
   public static void main(String[] args) {
     System.out.println();
 
-    PlayMusic("./assets/JubilifeCityNight8bit.wav");
-
     Trainer trainer = null;
 
     // Check if there is a saved game

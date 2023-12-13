@@ -41,22 +41,33 @@ public class Pokedex {
         int attack = Integer.parseInt(data[2]);
         String type = data[3];
         int evolutionStage = Integer.parseInt(data[4]);
+
+        Pokemon pokemon = new Pokemon(name, hp, attack, PokemonType.valueOf(type.toUpperCase()), evolutionStage);
+        pokedex.add(pokemon);
+      }
+    }
+    try (BufferedReader br = new BufferedReader(new FileReader("./assets/pokemons.csv"))) {
+      String line;
+      boolean firstLine = true;
+      while ((line = br.readLine()) != null) {
+        if (firstLine) {
+          firstLine = false;
+          continue;
+        }
+        // Create a new Pokemon for each line and add it to the Pokedex
+        String[] data = line.split(",");
+
+        String name = data[0];
         String evolutionString = data[5];
         ArrayList<Pokemon> evolution = new ArrayList<>();
         if (!evolutionString.equals("NULL")) {
           String[] evolutionNames = evolutionString.split(";");
           for (String evolutionName : evolutionNames) {
-            for (Pokemon pokemon : pokedex) {
-              if (pokemon.getName().equals(evolutionName)) {
-                evolution.add(pokemon);
-              }
-            }
+            evolution.add(getPokemonByName(evolutionName));
           }
         }
-
-        Pokemon pokemon = new Pokemon(name, hp, attack, PokemonType.valueOf(type.toUpperCase()), evolutionStage,
-            evolution);
-        pokedex.add(pokemon);
+        int idx = pokedex.indexOf(getPokemonByName(name));
+        pokedex.get(idx).setEvolution(evolution);
       }
     }
   }
@@ -67,6 +78,15 @@ public class Pokedex {
 
   public static void setPokedex(ArrayList<Pokemon> pokedex) {
     Pokedex.pokedex = pokedex;
+  }
+
+  public static Pokemon getPokemonByName(String name) {
+    for (Pokemon pokemon : pokedex) {
+      if (pokemon.getName().equals(name)) {
+        return pokemon;
+      }
+    }
+    return null;
   }
 
 }
