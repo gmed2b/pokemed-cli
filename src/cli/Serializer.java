@@ -16,7 +16,7 @@ public class Serializer {
 
   public static void serialize(String filename, Object o) {
     try {
-      fos = new FileOutputStream("saves/" + filename);
+      fos = new FileOutputStream(Main.SAVES_PATH + filename);
       oos = new ObjectOutputStream(fos);
       oos.writeObject(o);
     } catch (Exception e) {
@@ -34,7 +34,7 @@ public class Serializer {
   public static Object deserialize(String filename) {
     Object o = null;
     try {
-      fis = new FileInputStream("saves/" + filename);
+      fis = new FileInputStream(Main.SAVES_PATH + filename);
       ois = new ObjectInputStream(fis);
       o = (Object) ois.readObject();
     } catch (Exception e) {
@@ -51,7 +51,7 @@ public class Serializer {
   }
 
   public static boolean fileExists(String filename) {
-    File f = new File("saves/" + filename);
+    File f = new File(Main.SAVES_PATH + filename);
     return f.exists();
   }
 

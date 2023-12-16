@@ -8,6 +8,10 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
 public class Main {
+
+  static String POKEMONS_PATH = "../assets/pokemons.csv";
+  static String SAVES_PATH = "../saves/";
+
   static Pokedex pokedex = new Pokedex();
   static Scanner reader = new Scanner(System.in);
 
@@ -117,7 +121,12 @@ public class Main {
     }
   }
 
-  public static void Logger(String message) {
+  /**
+   * Log a message
+   * 
+   * @param message
+   */
+  public static void log(String message) {
     System.out.println("[LOG] " + message);
   }
 }

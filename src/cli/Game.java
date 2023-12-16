@@ -148,7 +148,9 @@ public class Game {
       client = new Client(trainer);
       client.run();
     } catch (Exception e) {
-      client.shutdown();
+      if (client != null) {
+        client.shutdown();
+      }
       System.out.println("[CLIENT] " + e.getMessage());
       Main.pressToContinue();
       return;
@@ -246,7 +248,7 @@ public class Game {
    */
   public static File[] getSavedGame() {
     try {
-      File folder = new File("./saves");
+      File folder = new File(Main.SAVES_PATH);
       File[] listOfFiles = folder.listFiles();
 
       if (listOfFiles.length == 0) {
@@ -255,6 +257,8 @@ public class Game {
         return listOfFiles;
       }
     } catch (NullPointerException npe) {
+      System.err.println("[ERROR] " + npe.getMessage());
+      System.exit(1);
       return null;
     }
   }

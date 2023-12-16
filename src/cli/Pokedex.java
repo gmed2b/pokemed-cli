@@ -7,17 +7,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Pokedex {
+
   static ArrayList<Pokemon> pokedex = new ArrayList<>();
 
   public Pokedex() {
     try {
       loadPokemon();
+      System.out.println("[LOG] Loaded " + pokedex.size() + " pokemons");
     } catch (FileNotFoundException e) {
-      System.out.println("File not found");
+      System.out.println("[ERROR] " + e.getMessage());
+      System.exit(1);
     } catch (IOException e) {
-      System.out.println("IO Exception");
     }
-    System.out.println("[LOG] Loaded " + pokedex.size() + " pokemons");
   }
 
   /**
@@ -27,7 +28,7 @@ public class Pokedex {
    * @throws FileNotFoundException
    */
   private static void loadPokemon() throws FileNotFoundException, IOException {
-    try (BufferedReader br = new BufferedReader(new FileReader("./assets/pokemons.csv"))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(Main.POKEMONS_PATH))) {
       String line;
       boolean firstLine = true;
       while ((line = br.readLine()) != null) {
@@ -48,7 +49,7 @@ public class Pokedex {
         pokedex.add(pokemon);
       }
     }
-    try (BufferedReader br = new BufferedReader(new FileReader("./assets/pokemons.csv"))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(Main.POKEMONS_PATH))) {
       String line;
       boolean firstLine = true;
       while ((line = br.readLine()) != null) {
