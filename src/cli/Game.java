@@ -199,7 +199,7 @@ public class Game {
    * 
    * @param trainer
    */
-  public static void saveGame(Trainer trainer) {
+  public static Trainer saveGame(Trainer trainer) {
     System.out.println();
 
     boolean canSave = false;
@@ -217,28 +217,28 @@ public class Game {
           break;
         } else {
           System.out.println("Saving game aborted");
-          return;
+          return (Trainer) Serializer.deserialize(trainer.getName());
         }
       } while (answer != "y" || answer != "n");
     }
 
-    if (!canSave) {
-      return;
+    // If no saved game with the same name exists, or if the user wants to overwrite
+    if (canSave) {
+      System.out.println("Saving game...");
+      try {
+        Thread.sleep(1300);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      Serializer.serialize(trainer.getName(), trainer);
+
+      System.out.println("Game saved !");
+      System.out.println();
+      return trainer;
+    } else {
+      return trainer;
     }
-
-    System.out.println("Saving game...");
-    try {
-      Thread.sleep(1300);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-
-    // ArrayList<Object> dataToSave = new ArrayList<>();
-    // dataToSave.add(trainer);
-    Serializer.serialize(trainer.getName(), trainer);
-
-    System.out.println("Game saved !");
-    System.out.println();
   }
 
   /**

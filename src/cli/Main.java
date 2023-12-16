@@ -1,6 +1,7 @@
 package cli;
 
 import java.io.File;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import javax.sound.sampled.AudioInputStream;
@@ -72,7 +73,7 @@ public class Main {
     System.out.println("New trainer created. Welcome " + trainer.getName() + "!");
 
     // Save the game
-    Game.saveGame(trainer);
+    trainer = Game.saveGame(trainer);
 
     return trainer;
   }
@@ -84,9 +85,15 @@ public class Main {
    */
   public static int getIntInput() {
     System.out.print("-> ");
-    int choice = reader.nextInt();
-    reader.nextLine(); // Consume the \n character
-    return choice;
+    try {
+      int choice = reader.nextInt();
+      reader.nextLine(); // Consume the \n character
+      return choice;
+    } catch (InputMismatchException e) {
+      System.out.println("Invalid input. Please enter a valid integer.");
+      reader.nextLine(); // Consume the invalid input
+      return getIntInput(); // Recursive call to get a valid integer input
+    }
   }
 
   /**
