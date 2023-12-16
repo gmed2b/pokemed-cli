@@ -1,8 +1,10 @@
+package cli;
+
 import java.io.File;
 
 public class Game {
   private Trainer trainer;
-  private GameClient client = null;
+  private Client client;
 
   public Game(Trainer trainer) {
     this.trainer = trainer;
@@ -50,6 +52,10 @@ public class Game {
           break;
         case 0:
         default:
+          try {
+            client.shutdown();
+          } catch (Exception e) {
+          }
           System.out.println("Exiting ...");
           System.exit(0);
           break;
@@ -127,13 +133,31 @@ public class Game {
    * Start an online battle
    */
   private void startOnlineBattle() {
-    if (this.client == null) {
-      this.client = new GameClient(this.trainer);
-    } else {
-      System.out.println("Already connected to a server");
+    System.out.println("Starting an online battle.");
+    System.out.println("Connecting to the server ...");
+
+    // Make sure trainer has at least 1 pokemon
+    if (trainer.getPokemons().size() == 0) {
+      System.out.println("You need at least 1 pokemon to start a battle");
+      Main.pressToContinue();
+      return;
+    }
+
+    try {
+      Thread.sleep(500);
+      client = new Client(trainer);
+      client.run();
+    } catch (Exception e) {
+      client.shutdown();
+      System.out.println("[CLIENT] " + e.getMessage());
+      Main.pressToContinue();
+      return;
     }
   }
 
+  /**
+   * List all items in the backpack
+   */
   private void listBackpackItems() {
     System.out.println("--------- Backpack ---------");
     System.out.println();
