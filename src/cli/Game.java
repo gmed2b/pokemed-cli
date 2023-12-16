@@ -148,8 +148,12 @@ public class Game {
       client = new Client(trainer);
       client.run();
     } catch (Exception e) {
-      if (client != null) {
-        client.shutdown();
+      try {
+        if (client != null) {
+          client.shutdown();
+        }
+      } catch (RuntimeException e2) {
+        System.out.println("[CLIENT] " + e2.getMessage());
       }
       System.out.println("[CLIENT] " + e.getMessage());
       Main.pressToContinue();

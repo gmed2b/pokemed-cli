@@ -1,8 +1,6 @@
 package server;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -13,60 +11,39 @@ import cli.Trainer;
 
 public class Server implements Runnable {
 
-  public static int PORT = 6942;
-  private ArrayList<ConnectionHandler> connections;
+  public static final int PORT = 6942;
   private ServerSocket server;
-  private boolean done = false;
-  private ExecutorService pool;
+  private ExecutorService pool = Executors.newFixedThreadPool(2);
 
-  private ArrayList<Trainer> queue = new ArrayList<Trainer>();
-
-  public Server() {
-    connections = new ArrayList<ConnectionHandler>();
-  }
+  public static ArrayList<ClientHandler> clients = new ArrayList<ClientHandler>();
+  public static ArrayList<Trainer> queue = new ArrayList<Trainer>();
 
   @Override
   public void run() {
     try {
       server = new ServerSocket(PORT);
       System.out.println("Server is running on port " + PORT);
-      pool = Executors.newCachedThreadPool();
-      while (!done) {
+
+      while (true) {
         Socket client = server.accept();
-        ConnectionHandler handler = new ConnectionHandler(client);
-        connections.add(handler);
-        // Run the handler run method in a new thread
-        pool.execute(handler);
+        ClientHandler clientThread = new ClientHandler(client);
+        clients.add(clientThread);
+
+        pool.execute(clientThread);
       }
+
     } catch (Exception e) {
       shutdown();
     }
   }
 
-  public void broadcast(String message) {
-    for (ConnectionHandler ch : connections) {
-      if (ch != null) {
-        ch.sendMessage(message);
-      }
-    }
-  }
-
-  public void broadcastCommands(Commands cmd, Object o) {
-    for (ConnectionHandler ch : connections) {
-      if (ch != null) {
-        ch.sendMessage(cmd.getCmd() + " " + o);
-      }
-    }
-  }
-
   public void shutdown() {
-    done = true;
     try {
       if (!server.isClosed()) {
         server.close();
       }
-      broadcast("Server is shutting down ...");
-      for (ConnectionHandler ch : connections) {
+      for (ClientHandler ch : clients) {
+        ch.broadcast(new StreamObject(null, "Server is shutting down"));
         if (ch != null) {
           ch.disconnect();
         }
@@ -84,10 +61,9 @@ public class Server implements Runnable {
     System.out.println("[" + prefix + "] > " + o);
   }
 
-  public enum Commands {
+  public static enum Commands {
     CONNECTION_COUNT("/getConnectionsCount"),
     START_BATTLE("/startBattle"),
-    OBJECT("/object"),
     QUIT("/quit"),
     ATTACK("/attack"),
     HEAL("/heal");
@@ -103,86 +79,30 @@ public class Server implements Runnable {
     }
   }
 
-  class ConnectionHandler implements Runnable {
+  public static class StreamObject implements Serializable {
+    private Commands cmd;
+    private Object o;
 
-    private Socket client;
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
-
-    public ConnectionHandler(Socket client) {
-      this.client = client;
-      try {
-        out = new ObjectOutputStream(client.getOutputStream());
-        in = new ObjectInputStream(client.getInputStream());
-      } catch (IOException e) {
-        disconnect();
-      }
+    public StreamObject(Commands cmd, Object o) {
+      this.cmd = cmd;
+      this.o = o;
     }
 
     @Override
-    public void run() {
-      try {
-        // Broadcast number of connections
-        broadcastCommands(Commands.CONNECTION_COUNT, connections.size());
-
-        Object object;
-        while ((object = in.readObject()) != null) {
-          Server.log(object, "OBJECT");
-
-          if (object instanceof Trainer) {
-            Trainer trainer = (Trainer) object;
-            if (queue.size() < 2) {
-              queue.add(trainer);
-              Server.log(trainer.getName() + " added to queue");
-            }
-            if (queue.size() == 2) {
-              Server.log("2 trainers, battle can start");
-              String[] names = queue.stream().map(t -> t.getName()).toArray(String[]::new);
-              broadcastCommands(Commands.START_BATTLE, names);
-              queue.clear();
-            }
-          }
-
-          if (object instanceof String) {
-            String message = (String) object;
-            if (message.startsWith(Commands.QUIT.getCmd())) {
-              disconnect();
-              broadcastCommands(Commands.CONNECTION_COUNT, connections.size());
-              break;
-            } else if (message.startsWith(Commands.ATTACK.getCmd())) {
-              broadcast(this + " attack");
-            } else if (message.startsWith(Commands.HEAL.getCmd())) {
-              broadcast(this + " heal");
-            }
-          }
-        }
-
-      } catch (Exception e) {
-        disconnect();
-      }
+    public String toString() {
+      if (cmd == null)
+        return "StreamObject [o=" + o + "]";
+      return "StreamObject [cmd=" + cmd.getCmd() + ", o=" + o + "]";
     }
 
-    public void sendMessage(String message) {
-      try {
-        out.writeObject(message);
-        out.flush();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+    public String getCmd() {
+      return cmd.getCmd();
     }
 
-    public void disconnect() {
-      try {
-        connections.remove(this);
-        if (!client.isClosed()) {
-          client.close();
-        }
-      } catch (Exception e) {
-        // TODO: handle exception
-      }
+    public Object getO() {
+      return o;
     }
-
-  } // End of ConnectionHandler class
+  }
 
   public static void main(String[] args) {
     Server server = new Server();

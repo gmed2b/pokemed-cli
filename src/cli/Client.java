@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import server.Server;
+import server.Server.StreamObject;
 
 public class Client implements Runnable {
 
@@ -13,11 +14,9 @@ public class Client implements Runnable {
   private Socket client;
   private ObjectOutputStream out;
   private ObjectInputStream in;
-  private boolean done;
 
   public Client(Trainer trainer) {
     try {
-      done = false;
       this.trainer = trainer;
       client = new Socket("127.0.0.1", Server.PORT);
       out = new ObjectOutputStream(client.getOutputStream());
@@ -31,30 +30,33 @@ public class Client implements Runnable {
   @Override
   public void run() {
     try {
-      while (!done) {
+      while (true) {
         // Send trainer information to the server
-        out.writeObject(this.trainer);
-        out.flush();
+        sendToServer(new StreamObject(null, trainer));
 
-        Object inObject;
-        while ((inObject = in.readObject()) != null) {
-          // Main.Logger("[MSG] " + inObject);
+        StreamObject object;
+        while ((object = (StreamObject) in.readObject()) != null) {
+          Main.log("[MSG] " + object);
 
-          if (inObject instanceof String) {
-            String inMessage = (String) inObject;
-            if (inMessage.startsWith(Server.Commands.START_BATTLE.getCmd())) {
-              battle();
-            }
-            if (inMessage.startsWith(Server.Commands.CONNECTION_COUNT.getCmd())) {
-              String count = inMessage.split(" ")[1];
-              System.out.println("[SERVER] > " + count + " player(s) in queue");
-              System.out.println("Waiting for an opponent ...");
-            }
+          // if (object instanceof String[]) {
 
-            if (inMessage.startsWith(Server.Commands.START_BATTLE.getCmd())) {
-              startOnlineBattle();
-            }
-          }
+          // if (inMessage.startsWith(Server.Commands.START_BATTLE.getCmd())) {
+          // System.out.println("Battle is starting ...");
+          // System.out.println(
+          // (String[]) inMessage.split(" ")[1]
+          // );
+          // // startOnlineBattle();
+          // }
+          // }
+
+          // if (object instanceof String) {
+          // String inMessage = (String) object;
+          // if (inMessage.startsWith(Server.Commands.CONNECTION_COUNT.getCmd())) {
+          // String count = inMessage.split(" ")[1];
+          // System.out.println("[SERVER] > " + count + " player(s) in queue");
+          // System.out.println("Waiting for an opponent ...");
+          // }
+          // }
 
         }
       }
@@ -103,7 +105,6 @@ public class Client implements Runnable {
   }
 
   public void shutdown() {
-    done = true;
     try {
       out.writeChars(Server.Commands.QUIT.getCmd());
       if (!client.isClosed()) {
@@ -120,4 +121,12 @@ public class Client implements Runnable {
     throw new RuntimeException("Disconnected from server!");
   }
 
+  private void sendToServer(StreamObject object) {
+    try {
+      out.writeObject(object);
+      out.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 }
