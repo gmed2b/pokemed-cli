@@ -245,13 +245,17 @@ public class Game {
    * @return List of saved games
    */
   public static File[] getSavedGame() {
-    File folder = new File("./saves");
-    File[] listOfFiles = folder.listFiles();
+    try {
+      File folder = new File("./saves");
+      File[] listOfFiles = folder.listFiles();
 
-    if (listOfFiles.length == 0) {
+      if (listOfFiles.length == 0) {
+        return null;
+      } else {
+        return listOfFiles;
+      }
+    } catch (NullPointerException npe) {
       return null;
-    } else {
-      return listOfFiles;
     }
   }
 
