@@ -1,6 +1,5 @@
 package server;
 
-import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class Server implements Runnable {
         server.close();
       }
       for (ClientHandler ch : clients) {
-        ch.broadcast(new StreamObject(null, "Server is shutting down"));
+        ch.broadcast(new ObjectStream(null, "Server is shutting down"));
         if (ch != null) {
           ch.disconnect();
         }
@@ -76,31 +75,6 @@ public class Server implements Runnable {
 
     public String getCmd() {
       return cmd;
-    }
-  }
-
-  public static class StreamObject implements Serializable {
-    private Commands cmd;
-    private Object o;
-
-    public StreamObject(Commands cmd, Object o) {
-      this.cmd = cmd;
-      this.o = o;
-    }
-
-    @Override
-    public String toString() {
-      if (cmd == null)
-        return "StreamObject [o=" + o + "]";
-      return "StreamObject [cmd=" + cmd.getCmd() + ", o=" + o + "]";
-    }
-
-    public String getCmd() {
-      return cmd.getCmd();
-    }
-
-    public Object getO() {
-      return o;
     }
   }
 

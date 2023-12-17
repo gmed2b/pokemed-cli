@@ -20,7 +20,7 @@ public class Game {
     System.out.println("You can also battle with other trainers");
     System.out.println();
 
-    // Main.PlayMusic("./assets/JubilifeCityNight8bit.wav");
+    // Main.PlayMusic(Main.ASSETS_PATH + "/JubilifeCityNight8bit.wav");
 
     // Main loop
     while (true) {
@@ -125,7 +125,7 @@ public class Game {
     if (backChoice != 0 && backChoice <= trainer.getPokemons().size()) {
       Pokemon selectedPokemon = trainer.getPokemons().get(backChoice - 1);
       System.out.println();
-      selectedPokemon.editPokemon();
+      selectedPokemon.editPokemon(trainer.getRareCandies());
     }
   }
 
@@ -148,14 +148,7 @@ public class Game {
       client = new Client(trainer);
       client.run();
     } catch (Exception e) {
-      try {
-        if (client != null) {
-          client.shutdown();
-        }
-      } catch (RuntimeException e2) {
-        System.out.println("[CLIENT] " + e2.getMessage());
-      }
-      System.out.println("[CLIENT] " + e.getMessage());
+      System.out.println("[EXCEPTION] " + e.getMessage());
       Main.pressToContinue();
       return;
     }

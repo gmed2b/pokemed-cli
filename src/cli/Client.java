@@ -1,12 +1,13 @@
 package cli;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import server.ObjectStream;
 import server.Server;
-import server.Server.StreamObject;
 
 public class Client implements Runnable {
 
@@ -22,7 +23,7 @@ public class Client implements Runnable {
       out = new ObjectOutputStream(client.getOutputStream());
       in = new ObjectInputStream(client.getInputStream());
     } catch (Exception e) {
-      System.out.println("Error: " + e.getMessage());
+      Main.log("Error: " + e.getMessage());
       shutdown();
     }
   }
@@ -32,74 +33,61 @@ public class Client implements Runnable {
     try {
       while (true) {
         // Send trainer information to the server
-        sendToServer(new StreamObject(null, trainer));
+        sendToServer(new ObjectStream(null, trainer));
 
-        StreamObject object;
-        while ((object = (StreamObject) in.readObject()) != null) {
-          Main.log("[MSG] " + object);
+        ObjectStream object;
+        while ((object = (ObjectStream) in.readObject()) != null) {
+          // Main.log(object, "MSG");
+          String cmd = object.getCmd();
+          Object data = object.getO();
 
-          // if (object instanceof String[]) {
+          if (cmd != null) {
 
-          // if (inMessage.startsWith(Server.Commands.START_BATTLE.getCmd())) {
-          // System.out.println("Battle is starting ...");
-          // System.out.println(
-          // (String[]) inMessage.split(" ")[1]
-          // );
-          // // startOnlineBattle();
-          // }
-          // }
+            if (cmd.equals(Server.Commands.CONNECTION_COUNT.getCmd())) {
+              int count = (int) data;
+              Main.log(count + " player(s) in queue", "SERVER");
+              System.out.println("Waiting for an opponent ...");
+            }
 
-          // if (object instanceof String) {
-          // String inMessage = (String) object;
-          // if (inMessage.startsWith(Server.Commands.CONNECTION_COUNT.getCmd())) {
-          // String count = inMessage.split(" ")[1];
-          // System.out.println("[SERVER] > " + count + " player(s) in queue");
-          // System.out.println("Waiting for an opponent ...");
-          // }
-          // }
+            if (cmd.equals(Server.Commands.START_BATTLE.getCmd())) {
+              String[] names = (String[]) data;
+              Main.log("Opponent found ! " + names[0] + " vs " + names[1], "SERVER");
+              System.out.println("Entering battle, let's fight !");
+              battleMenu();
+            }
 
+          }
         }
       }
+    } catch (EOFException e) {
+      Main.log("Server closed", "SERVER");
     } catch (IOException e) {
-      System.out.print("[ERROR] > ");
-      e.printStackTrace();
+      Main.log("Error: " + e.getMessage(), "SERVER");
+      // e.printStackTrace();
       shutdown();
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
     }
   }
 
-  public void startOnlineBattle() {
-    System.out.println("[SERVER] > Opponent found !");
-    System.out.println();
-    System.out.print("Entering battle, let's fight !");
-    try {
-      battle();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-  }
-
-  public void battle() throws IOException {
+  public void battleMenu() throws IOException {
     System.out.println();
     System.out.println("1. Attack");
-    System.out.println("2. Heal");
+    // System.out.println("2. Heal");
     System.out.println("0. Quit");
     int choice = Main.getIntInput();
-    System.out.println(choice);
     switch (choice) {
       case 1:
-        out.writeObject(Server.Commands.ATTACK.getCmd());
-        out.flush();
+        // Get first pokemon
+        Pokemon firstPokemon = trainer.getPokemons().get(0);
+        sendToServer(new ObjectStream(Server.Commands.ATTACK, firstPokemon));
         break;
-      case 2:
-        out.writeObject(Server.Commands.HEAL.getCmd());
-        out.flush();
-        break;
+      // case 2:
+      // out.writeObject(Server.Commands.HEAL.getCmd());
+      // out.flush();
+      // break;
       default:
-        out.writeObject(Server.Commands.QUIT.getCmd());
-        out.flush();
+        sendToServer(new ObjectStream(Server.Commands.QUIT, null));
         break;
     }
   }
@@ -121,7 +109,7 @@ public class Client implements Runnable {
     throw new RuntimeException("Disconnected from server!");
   }
 
-  private void sendToServer(StreamObject object) {
+  private void sendToServer(ObjectStream object) {
     try {
       out.writeObject(object);
       out.flush();

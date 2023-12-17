@@ -10,7 +10,8 @@ import javax.sound.sampled.Clip;
 
 public class Main {
 
-  static String POKEMONS_PATH = "../assets/pokemons.csv";
+  static String ASSETS_PATH = "../assets";
+  static String POKEMONS_PATH = ASSETS_PATH + "/pokemons.csv";
   static String SAVES_PATH = "../saves/";
 
   static Pokedex pokedex = new Pokedex();
@@ -133,7 +134,11 @@ public class Main {
    * 
    * @param message
    */
-  public static void log(String message) {
-    System.out.println("[LOG] " + message);
+  public static void log(Object o) {
+    System.out.println("[LOG] > " + o);
+  }
+
+  public static void log(Object o, String prefix) {
+    System.out.println("[" + prefix + "] > " + o);
   }
 }

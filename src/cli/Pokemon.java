@@ -53,12 +53,11 @@ public class Pokemon implements Serializable {
     }
 
     // Check if the trainer have enough rare candies
-
     if (amount > 5) {
       String answser;
+      System.out.println("You have more than 5 candies, you can evolve your pokemon.");
+      System.out.print("Do you want to evolve your pokemon ? (y/n) ");
       do {
-        System.out.println("You have more than 5 candies, you can evolve your pokemon.");
-        System.out.print("Do you want to evolve your pokemon ? (y/n) ");
         answser = Main.reader.nextLine();
       } while (answser != "y" || answser != "n");
       return;
@@ -111,10 +110,10 @@ public class Pokemon implements Serializable {
   /**
    * Edit the Pokemon
    */
-  public void editPokemon() {
+  public void editPokemon(ArrayList<RareCandy> rareCandies) {
     System.out.println("Editing " + this);
     System.out.println("1. Edit name");
-    // 2. eat candy
+    System.out.println("2. Eat candy");
     System.out.println("0. Back");
     int choice = Main.getIntInput();
     switch (choice) {
@@ -123,6 +122,27 @@ public class Pokemon implements Serializable {
         String newName = Main.reader.nextLine();
         setName(newName);
         System.out.println("Name changed !");
+        break;
+      case 2:
+        // Get the amount of candies that have the same type as the pokemon
+        ArrayList<RareCandy> sameTypeCandies = new ArrayList<>();
+        for (RareCandy candy : rareCandies) {
+          if (candy.getType() == getType()) {
+            sameTypeCandies.add(candy);
+          }
+        }
+        if (sameTypeCandies.size() == 0) {
+          System.out.println("You don't have any candies for this pokemon");
+          break;
+        }
+        System.out.println("You have " + sameTypeCandies.size() + " rare candies");
+        System.out.print("How many candies do you want to eat ? ");
+        int amount = Main.getIntInput();
+        try {
+          eat(amount);
+        } catch (IllegalArgumentException e) {
+          System.out.println(e.getMessage());
+        }
         break;
       case 0:
       default:
