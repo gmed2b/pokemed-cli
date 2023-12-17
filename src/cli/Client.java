@@ -58,10 +58,14 @@ public class Client implements Runnable {
               }
               Main.log("Opponent found ! " + trainers.get(0).getName() + " vs " + trainers.get(1).getName(), "SERVER");
               System.out.println("Entering battle, let's fight !");
-              battleMenu();
+
+              battleHandler(trainers);
             }
 
           }
+
+          System.out.println("Waiting for opponent's action ...");
+          System.out.println();
         }
       }
     } catch (EOFException e) {
@@ -75,23 +79,40 @@ public class Client implements Runnable {
     }
   }
 
-  public void battleMenu() throws IOException {
+  private void battleHandler(ArrayList<Trainer> trainers) throws IOException {
     System.out.println();
+
+    // Print enemy first pokemon
+    for (Trainer t : trainers) {
+      if (t != trainer) {
+        System.out.println(t.getName() + " has sent " + t.getPokemons().get(0).getName() + " !");
+      }
+    }
+
+    // Print trainer first pokemon
+    System.out.println("You sent " + trainer.getPokemons().get(0).getName() + " !");
+
+    // Display menu
+    displayMenu();
+  }
+
+  private void displayMenu() {
     System.out.println("1. Attack");
     // System.out.println("2. Heal");
     System.out.println("0. Quit");
     int choice;
-    do {
+    boolean validChoice = false;
+    while (!validChoice) {
       choice = Main.getIntInput();
       switch (choice) {
         case 1:
           // Get first pokemon
           // Pokemon firstPokemon = trainer.getPokemons().get(0);
           sendToServer(new ObjectStream(Server.Commands.ATTACK, null));
+          validChoice = true;
           break;
       }
-    } while (choice != 0);
-    shutdown();
+    }
   }
 
   public void shutdown() {

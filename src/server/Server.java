@@ -62,9 +62,10 @@ public class Server implements Runnable {
   public static enum Commands {
     CONNECTION_COUNT("/getConnectionsCount"),
     START_BATTLE("/startBattle"),
-    QUIT("/quit"),
+    SEND_1ST_POKEMON("/send1stPokemon"),
     ATTACK("/attack"),
-    HEAL("/heal");
+    HEAL("/heal"),
+    QUIT("/quit");
 
     private final String cmd;
 
