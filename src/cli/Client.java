@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import server.ObjectStream;
 import server.Server;
@@ -50,8 +51,12 @@ public class Client implements Runnable {
             }
 
             if (cmd.equals(Server.Commands.START_BATTLE.getCmd())) {
-              String[] names = (String[]) data;
-              Main.log("Opponent found ! " + names[0] + " vs " + names[1], "SERVER");
+              Object[] trainersObjects = (Object[]) data;
+              ArrayList<Trainer> trainers = new ArrayList<Trainer>();
+              for (Object o : trainersObjects) {
+                trainers.add((Trainer) o);
+              }
+              Main.log("Opponent found ! " + trainers.get(0).getName() + " vs " + trainers.get(1).getName(), "SERVER");
               System.out.println("Entering battle, let's fight !");
               battleMenu();
             }
@@ -75,26 +80,25 @@ public class Client implements Runnable {
     System.out.println("1. Attack");
     // System.out.println("2. Heal");
     System.out.println("0. Quit");
-    int choice = Main.getIntInput();
-    switch (choice) {
-      case 1:
-        // Get first pokemon
-        Pokemon firstPokemon = trainer.getPokemons().get(0);
-        sendToServer(new ObjectStream(Server.Commands.ATTACK, firstPokemon));
-        break;
-      // case 2:
-      // out.writeObject(Server.Commands.HEAL.getCmd());
-      // out.flush();
-      // break;
-      default:
-        sendToServer(new ObjectStream(Server.Commands.QUIT, null));
-        break;
-    }
+    int choice;
+    do {
+      choice = Main.getIntInput();
+      switch (choice) {
+        case 1:
+          // Get first pokemon
+          // Pokemon firstPokemon = trainer.getPokemons().get(0);
+          sendToServer(new ObjectStream(Server.Commands.ATTACK, null));
+          break;
+      }
+    } while (choice != 0);
+    shutdown();
   }
 
   public void shutdown() {
     try {
-      out.writeChars(Server.Commands.QUIT.getCmd());
+      // SEND TO OTHERS CLIENT THAT WE QUIT
+      // sendToServer(new ObjectStream(Server.Commands.QUIT, null));
+
       if (!client.isClosed()) {
         client.close();
       }

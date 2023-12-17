@@ -2,7 +2,8 @@ package server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,8 +15,7 @@ public class Server implements Runnable {
   private ServerSocket server;
   private ExecutorService pool = Executors.newFixedThreadPool(2);
 
-  public static ArrayList<ClientHandler> clients = new ArrayList<ClientHandler>();
-  public static ArrayList<Trainer> queue = new ArrayList<Trainer>();
+  public static Map<ClientHandler, Trainer> clients = new HashMap<ClientHandler, Trainer>();
 
   @Override
   public void run() {
@@ -26,8 +26,7 @@ public class Server implements Runnable {
       while (true) {
         Socket client = server.accept();
         ClientHandler clientThread = new ClientHandler(client);
-        clients.add(clientThread);
-
+        clients.put(clientThread, null);
         pool.execute(clientThread);
       }
 
@@ -41,7 +40,7 @@ public class Server implements Runnable {
       if (!server.isClosed()) {
         server.close();
       }
-      for (ClientHandler ch : clients) {
+      for (ClientHandler ch : clients.keySet()) {
         ch.broadcast(new ObjectStream(null, "Server is shutting down"));
         if (ch != null) {
           ch.disconnect();

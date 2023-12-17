@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import cli.Trainer;
 import server.Server.Commands;
@@ -23,7 +24,7 @@ public class ClientHandler implements Runnable {
   @Override
   public void run() {
     try {
-      Server.log(Server.clients);
+      // Server.log(Server.clients);
 
       ObjectStream object;
       while ((object = (ObjectStream) in.readObject()) != null) {
@@ -31,38 +32,35 @@ public class ClientHandler implements Runnable {
         String cmd = object.getCmd();
         Object data = object.getO();
 
+        // Handle first connection (Trainer object)
         if (data instanceof Trainer) {
           Trainer trainer = (Trainer) data;
-          if (Server.queue.size() < 2) {
-            Server.queue.add(trainer);
-            Server.log(trainer.getName() + " added to queue");
-            broadcast(new ObjectStream(Commands.CONNECTION_COUNT, Server.queue.size()));
-          }
-          if (Server.queue.size() == 2) {
-            Server.log("2 trainers, battle can start");
-            // Get trainers names
-            String[] names = new String[2];
-            for (Trainer t : Server.queue) {
-              names[Server.queue.indexOf(t)] = t.getName();
+          Server.clients.put(this, trainer);
+          Server.log(trainer.getName() + " added to queue");
+
+          if (Server.clients.size() >= 2) {
+            ArrayList<String> names = new ArrayList<String>();
+            for (Trainer t : Server.clients.values()) {
+              if (t != null) {
+                names.add(t.getName());
+              }
             }
+            Server.log("Battle start: " + names.get(0) + " vs " + names.get(1));
             // Broadcast battle start
-            broadcast(new ObjectStream(Commands.START_BATTLE, names));
-            Server.queue.clear();
+            broadcast(new ObjectStream(Commands.START_BATTLE, Server.clients.values().toArray()));
+          } else {
+            broadcast(new ObjectStream(Commands.CONNECTION_COUNT, Server.clients.size()));
           }
         }
 
-        // if (object instanceof String) {
-        // String message = (String) object;
-        // if (message.startsWith(Commands.QUIT.getCmd())) {
-        // disconnect();
-        // broadcast(Commands.CONNECTION_COUNT, Server.clients.size());
-        // break;
-        // } else if (message.startsWith(Commands.ATTACK.getCmd())) {
-        // broadcast(this + " attack");
-        // } else if (message.startsWith(Commands.HEAL.getCmd())) {
-        // broadcast(this + " heal");
-        // }
-        // }
+        // Handle comands
+        if (cmd != null) {
+
+          if (cmd.equals(Commands.ATTACK.getCmd())) {
+            Server.log(this + " > " + cmd + " " + data);
+          }
+
+        }
 
       }
 
@@ -74,7 +72,7 @@ public class ClientHandler implements Runnable {
   }
 
   public void broadcast(ObjectStream obj) {
-    for (ClientHandler ch : Server.clients) {
+    for (ClientHandler ch : Server.clients.keySet()) {
       if (ch != null) {
         try {
           ch.out.writeObject(obj);
@@ -89,7 +87,6 @@ public class ClientHandler implements Runnable {
   public void disconnect() {
     try {
       Server.clients.remove(this);
-      Server.queue.clear();
       // Close streams
       if (!out.equals(null)) {
         out.close();

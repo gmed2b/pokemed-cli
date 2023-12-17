@@ -59,6 +59,7 @@ public class Pokemon implements Serializable {
       System.out.print("Do you want to evolve your pokemon ? (y/n) ");
       do {
         answser = Main.reader.nextLine();
+        // If yes, evolve the pokemon, remove 5 candies and eat the rest
       } while (answser != "y" || answser != "n");
       return;
     }
@@ -171,7 +172,7 @@ public class Pokemon implements Serializable {
 
   public void setHp(int hp) {
     if (hp < 0) {
-      throw new IllegalArgumentException("HP must be greater than 0");
+      this.hp = 0;
     }
     this.hp = hp;
   }

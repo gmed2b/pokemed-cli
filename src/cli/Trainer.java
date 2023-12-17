@@ -21,9 +21,8 @@ public class Trainer implements Serializable {
    * Catch a pokemon randomly
    * 
    * @param pokemon The pokemon to catch
-   * @return A chance to drop a rare candy of the pokemon's type
    */
-  public RareCandy catchPokemon(Pokemon pokemon) {
+  public void catchPokemon(Pokemon pokemon) {
     // 75% chance to catch the pokemon
     if (Math.random() < 0.75) {
       System.out.println("You caught " + pokemon);
@@ -34,7 +33,6 @@ public class Trainer implements Serializable {
       } catch (UnsupportedOperationException e) {
         System.out.println("You can't have more than 6 pokemons");
         System.out.println("The pokemon escaped");
-        return null;
       }
 
       // 60% chance to drop a rare candy of the pokemon's type
@@ -42,13 +40,10 @@ public class Trainer implements Serializable {
         RareCandy rareCandy = new RareCandy(pokemon.getType());
         rareCandies.add(rareCandy);
         System.out.println("The pokemon dropped a rare candy !");
-        return rareCandy;
       }
 
-      return null;
     } else {
       System.out.println("The pokemon escaped");
-      return null;
     }
   }
 
