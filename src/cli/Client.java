@@ -51,20 +51,22 @@ public class Client implements Runnable {
             }
 
             if (cmd.equals(Server.Commands.START_BATTLE.getCmd())) {
-              Object[] trainersObjects = (Object[]) data;
-              ArrayList<Trainer> trainers = new ArrayList<Trainer>();
-              for (Object o : trainersObjects) {
-                trainers.add((Trainer) o);
-              }
-              Main.log("Opponent found ! " + trainers.get(0).getName() + " vs " + trainers.get(1).getName(), "SERVER");
+              // Cast data to ArrayList<String>
+              ArrayList<String> trainersNames = (ArrayList<String>) data;
+
+              Main.log("Opponent found ! " + trainersNames.get(0) + " vs " + trainersNames.get(1), "SERVER");
               System.out.println("Entering battle, let's fight !");
 
-              battleHandler(trainers);
+              battleHandler();
+            }
+
+            if (cmd.equals(Server.Commands.ASK_MOVE.getCmd())) {
+              // Display menu
+              displayMenu();
             }
 
           }
 
-          System.out.println("Waiting for opponent's action ...");
           System.out.println();
         }
       }
@@ -79,21 +81,24 @@ public class Client implements Runnable {
     }
   }
 
-  private void battleHandler(ArrayList<Trainer> trainers) throws IOException {
+  private void battleHandler() throws IOException {
     System.out.println();
 
-    // Print enemy first pokemon
-    for (Trainer t : trainers) {
-      if (t != trainer) {
-        System.out.println(t.getName() + " has sent " + t.getPokemons().get(0).getName() + " !");
-      }
-    }
+    // // Print enemy first pokemon
+    // for (Trainer t : trainers) {
+    // if (!t.getName().equals(trainer.getName())) {
+    // System.out.println(t.getName() + " has sent " +
+    // t.getPokemons().get(0).getName() + " !");
+    // }
+    // }
 
-    // Print trainer first pokemon
-    System.out.println("You sent " + trainer.getPokemons().get(0).getName() + " !");
+    // // Print trainer first pokemon
+    // System.out.println("You sent " + trainer.getPokemons().get(0).getName() + "
+    // !");
 
-    // Display menu
-    displayMenu();
+    // Client is ready to battle, inform the server
+    sendToServer(new ObjectStream(Server.Commands.READY, null));
+
   }
 
   private void displayMenu() {
@@ -113,6 +118,8 @@ public class Client implements Runnable {
           break;
       }
     }
+
+    System.out.println("Waiting for opponent's action ...");
   }
 
   public void shutdown() {

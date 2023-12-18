@@ -15,6 +15,8 @@ public class ClientHandler implements Runnable {
   private ObjectOutputStream out;
   private ObjectInputStream in;
 
+  private Trainer trainer;
+
   public ClientHandler(Socket client) throws IOException {
     this.client = client;
     out = new ObjectOutputStream(client.getOutputStream());
@@ -27,37 +29,59 @@ public class ClientHandler implements Runnable {
       // Server.log(Server.clients);
 
       ObjectStream object;
-      while ((object = (ObjectStream) in.readObject()) != null) {
-        // Server.log(object, "OBJECT");
+      while ((object = (ObjectStream) this.in.readObject()) != null) {
+        System.out.println();
+        Server.log(object, "NEW_MESSAGES");
         String cmd = object.getCmd();
         Object data = object.getO();
 
         // Handle first connection (Trainer object)
         if (data instanceof Trainer) {
           Trainer trainer = (Trainer) data;
-          Server.clients.put(this, trainer);
+          this.trainer = trainer;
           Server.log(trainer.getName() + " added to queue");
 
-          if (Server.clients.size() >= 2) {
+          if (Server.connections.size() >= 2) {
             ArrayList<String> names = new ArrayList<String>();
-            for (Trainer t : Server.clients.values()) {
-              if (t != null) {
-                names.add(t.getName());
+            for (ClientHandler ch : Server.connections) {
+              if (ch != null) {
+                names.add(ch.trainer.getName());
               }
             }
             Server.log("Battle start: " + names.get(0) + " vs " + names.get(1));
-            // Broadcast battle start
-            broadcast(new ObjectStream(Commands.START_BATTLE, Server.clients.values().toArray()));
+            broadcast(new ObjectStream(Commands.START_BATTLE, names));
           } else {
-            broadcast(new ObjectStream(Commands.CONNECTION_COUNT, Server.clients.size()));
+            broadcast(new ObjectStream(Commands.CONNECTION_COUNT, Server.connections.size()));
           }
         }
 
         // Handle comands
         if (cmd != null) {
 
-          if (cmd.equals(Commands.ATTACK.getCmd())) {
-            Server.log(this + " > " + cmd + " " + data);
+          if (cmd.equals(Commands.READY.getCmd())) {
+
+            if (!Server.queue.contains(this)) {
+              Server.log(this + " is ready");
+              Server.queue.add(this);
+            }
+
+            Server.log(Server.queue, "QUEUE");
+
+            // if (Server.firstPlayerTurn && Server.queue.size() > 0) {
+            // Server.firstPlayerTurn = false;
+            // ClientHandler currentClient = Server.queue.poll();
+            // while (currentClient != null) {
+            // Server.log("current is " + currentClient);
+
+            // currentClient.send(new ObjectStream(Commands.ASK_MOVE, null));
+            // ObjectStream move = (ObjectStream) currentClient.in.readObject();
+            // Server.log(move, "MOVE");
+
+            // currentClient = Server.queue.poll();
+            // }
+            // Server.firstPlayerTurn = true;
+            // Server.log("Round finished");
+            // }
           }
 
         }
@@ -65,14 +89,14 @@ public class ClientHandler implements Runnable {
       }
 
     } catch (Exception e) {
-      System.err.println("[ERROR] > " + e.getMessage());
-      // e.printStackTrace();
+      System.err.println("[ERROR] " + e.getClass().getName() + " > " + e.getMessage());
+      e.printStackTrace();
       disconnect();
     }
   }
 
   public void broadcast(ObjectStream obj) {
-    for (ClientHandler ch : Server.clients.keySet()) {
+    for (ClientHandler ch : Server.connections) {
       if (ch != null) {
         try {
           ch.out.writeObject(obj);
@@ -84,9 +108,18 @@ public class ClientHandler implements Runnable {
     }
   }
 
+  public void send(ObjectStream obj) {
+    try {
+      this.out.writeObject(obj);
+      this.out.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   public void disconnect() {
     try {
-      Server.clients.remove(this);
+      Server.connections.remove(this);
       // Close streams
       if (!out.equals(null)) {
         out.close();

@@ -2,12 +2,11 @@ package server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import cli.Trainer;
 
 public class Server implements Runnable {
 
@@ -15,7 +14,8 @@ public class Server implements Runnable {
   private ServerSocket server;
   private ExecutorService pool = Executors.newFixedThreadPool(2);
 
-  public static Map<ClientHandler, Trainer> clients = new HashMap<ClientHandler, Trainer>();
+  public static ArrayList<ClientHandler> connections = new ArrayList<ClientHandler>();
+  public static Queue<ClientHandler> queue = new ArrayDeque<ClientHandler>();
 
   @Override
   public void run() {
@@ -26,7 +26,7 @@ public class Server implements Runnable {
       while (true) {
         Socket client = server.accept();
         ClientHandler clientThread = new ClientHandler(client);
-        clients.put(clientThread, null);
+        connections.add(clientThread);
         pool.execute(clientThread);
       }
 
@@ -40,7 +40,7 @@ public class Server implements Runnable {
       if (!server.isClosed()) {
         server.close();
       }
-      for (ClientHandler ch : clients.keySet()) {
+      for (ClientHandler ch : connections) {
         ch.broadcast(new ObjectStream(null, "Server is shutting down"));
         if (ch != null) {
           ch.disconnect();
@@ -62,7 +62,8 @@ public class Server implements Runnable {
   public static enum Commands {
     CONNECTION_COUNT("/getConnectionsCount"),
     START_BATTLE("/startBattle"),
-    SEND_1ST_POKEMON("/send1stPokemon"),
+    READY("/ready"),
+    ASK_MOVE("/askMove"),
     ATTACK("/attack"),
     HEAL("/heal"),
     QUIT("/quit");
