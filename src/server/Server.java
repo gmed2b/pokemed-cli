@@ -2,9 +2,7 @@ package server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,7 +13,6 @@ public class Server implements Runnable {
   private ExecutorService pool = Executors.newFixedThreadPool(2);
 
   public static ArrayList<ClientHandler> connections = new ArrayList<ClientHandler>();
-  public static Queue<ClientHandler> queue = new ArrayDeque<ClientHandler>();
 
   @Override
   public void run() {
@@ -60,10 +57,14 @@ public class Server implements Runnable {
   }
 
   public static enum Commands {
-    CONNECTION_COUNT("/getConnectionsCount"),
-    START_BATTLE("/startBattle"),
-    READY("/ready"),
-    ASK_MOVE("/askMove"),
+    INIT_TRAINER("/init_trainer"),
+    IN_QUEUE("/in_queue"),
+    BATTLE_STARTING("/battle_starting"),
+    BATTLE_END("/battle_end"),
+    SET_ACTION("/set_action"),
+    EOT("/eot"),
+    BEGIN_TURN("/begin_turn"),
+
     ATTACK("/attack"),
     HEAL("/heal"),
     QUIT("/quit");

@@ -20,8 +20,8 @@ public class ObjectStream implements Serializable {
     return "ObjectStream [cmd=" + cmd.getCmd() + ", o=" + o + "]";
   }
 
-  public String getCmd() {
-    return cmd != null ? cmd.getCmd() : null;
+  public Commands getCmd() {
+    return cmd != null ? cmd : null;
   }
 
   public Object getO() {

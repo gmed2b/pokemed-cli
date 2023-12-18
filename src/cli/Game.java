@@ -3,6 +3,8 @@ package cli;
 import java.io.File;
 
 public class Game {
+  public static int ATTACK_COEFFICIENT = 10;
+
   private Trainer trainer;
   private Client client;
 
@@ -53,7 +55,7 @@ public class Game {
         case 0:
         default:
           try {
-            client.shutdown();
+            client.disconnect();
           } catch (Exception e) {
           }
           System.out.println("Exiting ...");
@@ -121,7 +123,6 @@ public class Game {
     System.out.println();
     System.out.println("0. Back");
     int backChoice = Main.getIntInput();
-    // Add a way to select a pokemon and display its profile
     if (backChoice != 0 && backChoice <= trainer.getPokemons().size()) {
       Pokemon selectedPokemon = trainer.getPokemons().get(backChoice - 1);
       System.out.println();

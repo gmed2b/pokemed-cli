@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 
+import cli.Pokemon;
 import cli.Trainer;
+import lib.Pair;
 import server.Server.Commands;
 
 public class ClientHandler implements Runnable {
@@ -16,6 +17,8 @@ public class ClientHandler implements Runnable {
   private ObjectInputStream in;
 
   private Trainer trainer;
+  private Pokemon currentPokemon = null;
+  private ObjectStream action = null;
 
   public ClientHandler(Socket client) throws IOException {
     this.client = client;
@@ -30,60 +33,62 @@ public class ClientHandler implements Runnable {
 
       ObjectStream object;
       while ((object = (ObjectStream) this.in.readObject()) != null) {
-        System.out.println();
-        Server.log(object, "NEW_MESSAGES");
-        String cmd = object.getCmd();
+        // Server.log(object, "NEW_MESSAGES");
+        Commands cmd = object.getCmd();
         Object data = object.getO();
 
-        // Handle first connection (Trainer object)
-        if (data instanceof Trainer) {
-          Trainer trainer = (Trainer) data;
-          this.trainer = trainer;
-          Server.log(trainer.getName() + " added to queue");
+        if (cmd.equals(Commands.INIT_TRAINER)) {
+          this.trainer = (Trainer) data;
+          send(new ObjectStream(Commands.INIT_TRAINER, true));
+        }
 
-          if (Server.connections.size() >= 2) {
-            ArrayList<String> names = new ArrayList<String>();
-            for (ClientHandler ch : Server.connections) {
-              if (ch != null) {
-                names.add(ch.trainer.getName());
-              }
-            }
-            Server.log("Battle start: " + names.get(0) + " vs " + names.get(1));
-            broadcast(new ObjectStream(Commands.START_BATTLE, names));
+        if (cmd.equals(Commands.IN_QUEUE)) {
+          Server.log(this.trainer.getName() + " added to queue");
+          this.currentPokemon = (Pokemon) data;
+
+          // Check if both clients are ready
+          ClientHandler opponent = getOpponent();
+          if (Server.connections.size() == 2 && opponent != null && opponent.currentPokemon != null) {
+            Server.log("A battle is starting!");
+            // TODO: Send to each client against who they are battling!
+            broadcast(new ObjectStream(Commands.BATTLE_STARTING, null));
           } else {
-            broadcast(new ObjectStream(Commands.CONNECTION_COUNT, Server.connections.size()));
+            send(new ObjectStream(Commands.IN_QUEUE, Server.connections.size()));
           }
         }
 
-        // Handle comands
-        if (cmd != null) {
+        if (cmd.equals(Commands.SET_ACTION)) {
+          this.action = object;
+          send(new ObjectStream(Commands.SET_ACTION, true));
+        }
 
-          if (cmd.equals(Commands.READY.getCmd())) {
-
-            if (!Server.queue.contains(this)) {
-              Server.log(this + " is ready");
-              Server.queue.add(this);
+        if (cmd.equals(Commands.EOT)) {
+          boolean validateAction = true;
+          while (validateAction) {
+            // Check if both clients have set their action
+            for (ClientHandler ch : Server.connections) {
+              if (ch != null) {
+                if (ch.action == null) {
+                  validateAction = false;
+                  break;
+                }
+              }
             }
 
-            Server.log(Server.queue, "QUEUE");
-
-            // if (Server.firstPlayerTurn && Server.queue.size() > 0) {
-            // Server.firstPlayerTurn = false;
-            // ClientHandler currentClient = Server.queue.poll();
-            // while (currentClient != null) {
-            // Server.log("current is " + currentClient);
-
-            // currentClient.send(new ObjectStream(Commands.ASK_MOVE, null));
-            // ObjectStream move = (ObjectStream) currentClient.in.readObject();
-            // Server.log(move, "MOVE");
-
-            // currentClient = Server.queue.poll();
-            // }
-            // Server.firstPlayerTurn = true;
-            // Server.log("Round finished");
-            // }
+            // If both clients have set their action, execute the battle
+            if (validateAction) {
+              for (ClientHandler ch : Server.connections) {
+                if (ch != null) {
+                  // Can attack if pokemon is alive
+                  if (ch.currentPokemon.getHp() > 0) {
+                    processBattle(ch, ch.getOpponent());
+                  }
+                  ch.action = null;
+                }
+              }
+            }
+            break;
           }
-
         }
 
       }
@@ -93,6 +98,46 @@ public class ClientHandler implements Runnable {
       e.printStackTrace();
       disconnect();
     }
+  }
+
+  private void processBattle(ClientHandler me, ClientHandler opponent) {
+    ObjectStream data = (ObjectStream) me.action.getO();
+    Commands cmd = data.getCmd();
+
+    if (cmd.equals(Commands.ATTACK)) {
+      Pokemon myPokemon = me.currentPokemon;
+      Pokemon enemyPokemon = opponent.currentPokemon;
+      int damage_dealt = me.trainer.attack(myPokemon, enemyPokemon);
+      Server.log(me.trainer.getName() + "'s " + myPokemon.getName() + " dealt " + damage_dealt + " damage to "
+          + opponent.trainer.getName() + "'s "
+          + enemyPokemon.getName());
+
+      // Check if enemy pokemon is dead
+      if (enemyPokemon.getHp() <= 0) {
+        Server.log(opponent.trainer.getName() + "'s " + enemyPokemon.getName() + " is dead");
+        Server.log(opponent.trainer.getName() + " lost the battle!");
+        Server.log(me.trainer.getName() + " won the battle!");
+        me.send(new ObjectStream(Commands.BATTLE_END, true));
+        opponent.send(new ObjectStream(Commands.BATTLE_END, false));
+      } else {
+        // Get index of enemy pokemon
+        int enemyPokemonIndex = opponent.trainer.getPokemons().indexOf(enemyPokemon);
+        // Send to enemy client that their pokemon took damage
+        Pair<Integer, Integer> newPokemonEnemy = new Pair<>(enemyPokemonIndex, damage_dealt);
+        opponent.send(new ObjectStream(Commands.ATTACK, newPokemonEnemy));
+      }
+    }
+  }
+
+  private ClientHandler getOpponent() {
+    for (ClientHandler ch : Server.connections) {
+      if (ch != null) {
+        if (!ch.equals(this)) {
+          return ch;
+        }
+      }
+    }
+    return null;
   }
 
   public void broadcast(ObjectStream obj) {

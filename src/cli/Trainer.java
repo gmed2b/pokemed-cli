@@ -2,6 +2,10 @@ package cli;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
+
+import server.ObjectStream;
+import server.Server.Commands;
 
 public class Trainer implements Serializable {
   private String name;
@@ -18,6 +22,58 @@ public class Trainer implements Serializable {
   }
 
   /**
+   * Attack another pokemon
+   * 
+   * @param p1 The pokemon to attack with
+   * @param p2 The pokemon to attack
+   * @return The damage dealt
+   */
+  public int attack(Pokemon p1, Pokemon p2) {
+    // Calculate the damage dealt by the pokemon p1
+    Random rand = new Random();
+    int random = rand.nextInt(15) + 7;
+    int lvl = p1.getEvolutionStage() * random;
+    double attack_coeff = (2.0 * lvl + 10) / 250.0;
+    int damage = (int) Math.floor((attack_coeff * (float) p1.getAttack()) + Game.ATTACK_COEFFICIENT);
+
+    // Set the damage dealt to the pokemon p2
+    p2.setHp(p2.getHp() - damage);
+
+    // Return the damage dealt
+    return damage;
+  }
+
+  /**
+   * Choose a pokemon to attack with
+   * 
+   * @return The pokemon to attack with
+   */
+  public Pokemon choosePokemon() {
+    System.out.println("Choose a pokemon to attack with");
+    listOwnedPokemons();
+    int pokemonChoice = Main.getIntInput();
+    if (pokemonChoice > 0 && pokemonChoice <= this.getPokemons().size()) {
+      Pokemon selectedPokemon = this.getPokemons().get(pokemonChoice - 1);
+      return selectedPokemon;
+    }
+    return null;
+  }
+
+  /**
+   * Get battle action from the trainer
+   * 
+   * @return The battle action
+   */
+  public ObjectStream getBattleAction() {
+    System.out.println("1. Attack");
+    int choice = Main.getIntInput();
+    if (choice == 1) {
+      return new ObjectStream(Commands.ATTACK, null);
+    }
+    return null;
+  }
+
+  /**
    * Catch a pokemon randomly
    * 
    * @param pokemon The pokemon to catch
@@ -30,18 +86,17 @@ public class Trainer implements Serializable {
       // Add the pokemon to the trainer's pokemons (if possible)
       try {
         addPokemon(pokemon);
+
+        // 60% chance to drop a rare candy of the pokemon's type
+        if (Math.random() < 0.60) {
+          RareCandy rareCandy = new RareCandy(pokemon.getType());
+          rareCandies.add(rareCandy);
+          System.out.println("The pokemon dropped a rare candy !");
+        }
       } catch (UnsupportedOperationException e) {
         System.out.println("You can't have more than 6 pokemons");
         System.out.println("The pokemon escaped");
       }
-
-      // 60% chance to drop a rare candy of the pokemon's type
-      if (Math.random() < 0.60) {
-        RareCandy rareCandy = new RareCandy(pokemon.getType());
-        rareCandies.add(rareCandy);
-        System.out.println("The pokemon dropped a rare candy !");
-      }
-
     } else {
       System.out.println("The pokemon escaped");
     }

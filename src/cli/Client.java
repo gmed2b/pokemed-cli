@@ -5,10 +5,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 
+import lib.Pair;
 import server.ObjectStream;
 import server.Server;
+import server.Server.Commands;
 
 public class Client implements Runnable {
 
@@ -25,7 +26,7 @@ public class Client implements Runnable {
       in = new ObjectInputStream(client.getInputStream());
     } catch (Exception e) {
       Main.log("Error: " + e.getMessage());
-      shutdown();
+      disconnect();
     }
   }
 
@@ -34,37 +35,58 @@ public class Client implements Runnable {
     try {
       while (true) {
         // Send trainer information to the server
-        sendToServer(new ObjectStream(null, trainer));
+        sendToServer(new ObjectStream(Commands.INIT_TRAINER, trainer));
 
         ObjectStream object;
         while ((object = (ObjectStream) in.readObject()) != null) {
           // Main.log(object, "MSG");
-          String cmd = object.getCmd();
+          Commands cmd = object.getCmd();
           Object data = object.getO();
 
-          if (cmd != null) {
+          if (cmd.equals(Commands.INIT_TRAINER)) {
+            if ((boolean) data) {
+              System.out.println("Connected to server!");
+              Pokemon choosePokemon = trainer.choosePokemon();
 
-            if (cmd.equals(Server.Commands.CONNECTION_COUNT.getCmd())) {
-              int count = (int) data;
-              Main.log(count + " player(s) in queue", "SERVER");
-              System.out.println("Waiting for an opponent ...");
+              sendToServer(new ObjectStream(Commands.IN_QUEUE, choosePokemon));
             }
+          }
 
-            if (cmd.equals(Server.Commands.START_BATTLE.getCmd())) {
-              // Cast data to ArrayList<String>
-              ArrayList<String> trainersNames = (ArrayList<String>) data;
+          if (cmd.equals(Commands.IN_QUEUE)) {
+            int queueSize = (int) data;
+            System.out.println("Waiting for opponent ... (" + queueSize + "/2)");
+          }
 
-              Main.log("Opponent found ! " + trainersNames.get(0) + " vs " + trainersNames.get(1), "SERVER");
-              System.out.println("Entering battle, let's fight !");
+          if (cmd.equals(Commands.BATTLE_STARTING)) {
+            Main.log("Opponent found!", "SERVER");
+            displayMenuBattle();
+          }
 
-              battleHandler();
+          if (cmd.equals(Commands.BATTLE_END)) {
+            if ((boolean) data) {
+              System.out.println("You won!");
+            } else {
+              System.out.println("You lost!");
             }
+          }
 
-            if (cmd.equals(Server.Commands.ASK_MOVE.getCmd())) {
-              // Display menu
-              displayMenu();
+          if (cmd.equals(Commands.SET_ACTION)) {
+            if ((boolean) data) {
+              System.out.println("Waiting for opponent's action ...");
+              sendToServer(new ObjectStream(Commands.EOT, null));
             }
+          }
 
+          if (cmd.equals(Commands.ATTACK)) {
+            @SuppressWarnings("unchecked")
+            Pair<Integer, Integer> newPokemonPair = (Pair<Integer, Integer>) data;
+            Pokemon localPokemon = trainer.getPokemons().get(newPokemonPair.getFirst().intValue());
+            int damage_taken = newPokemonPair.getSecond().intValue();
+            // Update your pokemon's hp
+            localPokemon.setHp(localPokemon.getHp() - damage_taken);
+            System.out.println("You took " + damage_taken + " damage!");
+
+            // displayMenuBattle();
           }
 
           System.out.println();
@@ -75,54 +97,19 @@ public class Client implements Runnable {
     } catch (IOException e) {
       Main.log("Error: " + e.getMessage(), "SERVER");
       // e.printStackTrace();
-      shutdown();
+      disconnect();
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
     }
   }
 
-  private void battleHandler() throws IOException {
-    System.out.println();
-
-    // // Print enemy first pokemon
-    // for (Trainer t : trainers) {
-    // if (!t.getName().equals(trainer.getName())) {
-    // System.out.println(t.getName() + " has sent " +
-    // t.getPokemons().get(0).getName() + " !");
-    // }
-    // }
-
-    // // Print trainer first pokemon
-    // System.out.println("You sent " + trainer.getPokemons().get(0).getName() + "
-    // !");
-
-    // Client is ready to battle, inform the server
-    sendToServer(new ObjectStream(Server.Commands.READY, null));
-
+  private void displayMenuBattle() {
+    System.out.println("Choose your action :");
+    ObjectStream battleAction = trainer.getBattleAction();
+    sendToServer(new ObjectStream(Commands.SET_ACTION, battleAction));
   }
 
-  private void displayMenu() {
-    System.out.println("1. Attack");
-    // System.out.println("2. Heal");
-    System.out.println("0. Quit");
-    int choice;
-    boolean validChoice = false;
-    while (!validChoice) {
-      choice = Main.getIntInput();
-      switch (choice) {
-        case 1:
-          // Get first pokemon
-          // Pokemon firstPokemon = trainer.getPokemons().get(0);
-          sendToServer(new ObjectStream(Server.Commands.ATTACK, null));
-          validChoice = true;
-          break;
-      }
-    }
-
-    System.out.println("Waiting for opponent's action ...");
-  }
-
-  public void shutdown() {
+  public void disconnect() {
     try {
       // SEND TO OTHERS CLIENT THAT WE QUIT
       // sendToServer(new ObjectStream(Server.Commands.QUIT, null));
