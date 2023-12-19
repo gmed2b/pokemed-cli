@@ -21,7 +21,7 @@ public class Client implements Runnable {
   public Client(Trainer trainer) {
     try {
       this.trainer = trainer;
-      client = new Socket("http://gelk.fr", Server.PORT);
+      client = new Socket("158.178.205.119", Server.PORT);
       out = new ObjectOutputStream(client.getOutputStream());
       in = new ObjectInputStream(client.getInputStream());
     } catch (Exception e) {
