@@ -22,7 +22,7 @@ public class Game {
     System.out.println("You can also battle with other trainers");
     System.out.println();
 
-    // Main.PlayMusic(Main.ASSETS_PATH + "/JubilifeCityNight8bit.wav");
+    Main.PlayMusic(Main.ASSETS_PATH + "/JubilifeCityNight8bit.wav");
 
     // Main loop
     while (true) {
