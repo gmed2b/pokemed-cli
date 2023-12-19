@@ -74,7 +74,7 @@ public class Main {
     System.out.println("New trainer created. Welcome " + trainer.getName() + "!");
 
     // Save the game
-    trainer = Game.saveGame(trainer);
+    trainer = Game.saveGame(trainer, false);
 
     return trainer;
   }

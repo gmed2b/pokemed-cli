@@ -171,10 +171,11 @@ public class Pokemon implements Serializable {
   }
 
   public void setHp(int hp) {
-    if (hp < 0) {
+    this.hp = hp;
+    if (this.hp < 0) {
+      // Pokemon fainted
       this.hp = 0;
     }
-    this.hp = hp;
   }
 
   public int getAttack() {

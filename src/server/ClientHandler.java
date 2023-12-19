@@ -62,6 +62,33 @@ public class ClientHandler implements Runnable {
           send(new ObjectStream(Commands.SET_ACTION, true));
         }
 
+        if (cmd.equals(Commands.NEXT_TURN)) {
+          // Reset action
+          this.action = null;
+
+          boolean validateAction = true;
+          while (validateAction) {
+            // Check if both clients have reset their action
+            for (ClientHandler ch : Server.connections) {
+              if (ch != null) {
+                if (ch.action != null) {
+                  validateAction = false;
+                  break;
+                }
+              }
+            }
+
+            // If both clients have reset their action, can continue to next turn
+            if (validateAction) {
+              boolean canContinue = checkBattleResult();
+              if (canContinue) {
+                broadcast(new ObjectStream(Commands.NEXT_TURN, true));
+              }
+            }
+            break;
+          }
+        }
+
         if (cmd.equals(Commands.EOT)) {
           boolean validateAction = true;
           while (validateAction) {
@@ -79,11 +106,7 @@ public class ClientHandler implements Runnable {
             if (validateAction) {
               for (ClientHandler ch : Server.connections) {
                 if (ch != null) {
-                  // Can attack if pokemon is alive
-                  if (ch.currentPokemon.getHp() > 0) {
-                    processBattle(ch, ch.getOpponent());
-                  }
-                  ch.action = null;
+                  processBattle(ch, ch.getOpponent());
                 }
               }
             }
@@ -95,7 +118,9 @@ public class ClientHandler implements Runnable {
 
     } catch (Exception e) {
       System.err.println("[ERROR] " + e.getClass().getName() + " > " + e.getMessage());
-      e.printStackTrace();
+      if (!e.getClass().getName().equals("java.io.EOFException")) {
+        e.printStackTrace();
+      }
       disconnect();
     }
   }
@@ -112,21 +137,30 @@ public class ClientHandler implements Runnable {
           + opponent.trainer.getName() + "'s "
           + enemyPokemon.getName());
 
-      // Check if enemy pokemon is dead
-      if (enemyPokemon.getHp() <= 0) {
-        Server.log(opponent.trainer.getName() + "'s " + enemyPokemon.getName() + " is dead");
-        Server.log(opponent.trainer.getName() + " lost the battle!");
-        Server.log(me.trainer.getName() + " won the battle!");
-        me.send(new ObjectStream(Commands.BATTLE_END, true));
-        opponent.send(new ObjectStream(Commands.BATTLE_END, false));
-      } else {
-        // Get index of enemy pokemon
-        int enemyPokemonIndex = opponent.trainer.getPokemons().indexOf(enemyPokemon);
-        // Send to enemy client that their pokemon took damage
-        Pair<Integer, Integer> newPokemonEnemy = new Pair<>(enemyPokemonIndex, damage_dealt);
-        opponent.send(new ObjectStream(Commands.ATTACK, newPokemonEnemy));
+      // Get index of enemy pokemon
+      int enemyPokemonIndex = opponent.trainer.getPokemons().indexOf(enemyPokemon);
+      // Send to enemy client that their pokemon took damage
+      Pair<Integer, Integer> newPokemonEnemy = new Pair<>(enemyPokemonIndex, damage_dealt);
+      opponent.send(new ObjectStream(Commands.ATTACK, newPokemonEnemy));
+    }
+  }
+
+  private boolean checkBattleResult() {
+    // Check if battle is over
+    boolean canContinue = true;
+    for (ClientHandler ch : Server.connections) {
+      if (ch != null) {
+        if (ch.currentPokemon.getHp() <= 0) {
+          Server.log(ch.trainer.getName() + "'s " + ch.currentPokemon.getName() + " fainted!");
+          // Send to client that they lost
+          ch.send(new ObjectStream(Commands.BATTLE_END, false));
+          // Send to opponent that they won
+          ch.getOpponent().send(new ObjectStream(Commands.BATTLE_END, true));
+          canContinue = false;
+        }
       }
     }
+    return canContinue;
   }
 
   private ClientHandler getOpponent() {

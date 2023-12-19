@@ -63,7 +63,7 @@ public class Server implements Runnable {
     BATTLE_END("/battle_end"),
     SET_ACTION("/set_action"),
     EOT("/eot"),
-    BEGIN_TURN("/begin_turn"),
+    NEXT_TURN("/next_turn"),
 
     ATTACK("/attack"),
     HEAL("/heal"),

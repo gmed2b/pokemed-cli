@@ -68,6 +68,7 @@ public class Client implements Runnable {
             } else {
               System.out.println("You lost!");
             }
+            disconnect();
           }
 
           if (cmd.equals(Commands.SET_ACTION)) {
@@ -85,8 +86,21 @@ public class Client implements Runnable {
             // Update your pokemon's hp
             localPokemon.setHp(localPokemon.getHp() - damage_taken);
             System.out.println("You took " + damage_taken + " damage!");
+            System.out.println(localPokemon.getName() + " has " + localPokemon.getHp() + " hp left!");
+            // if your pokemon fainted, release it
+            if (localPokemon.getHp() <= 0) {
+              System.out.println(localPokemon.getName() + " fainted!");
+              trainer.getPokemons().remove(localPokemon);
+            }
 
+            sendToServer(new ObjectStream(Commands.NEXT_TURN, true));
             // displayMenuBattle();
+          }
+
+          if (cmd.equals(Commands.NEXT_TURN)) {
+            if ((boolean) data) {
+              displayMenuBattle();
+            }
           }
 
           System.out.println();
@@ -111,8 +125,7 @@ public class Client implements Runnable {
 
   public void disconnect() {
     try {
-      // SEND TO OTHERS CLIENT THAT WE QUIT
-      // sendToServer(new ObjectStream(Server.Commands.QUIT, null));
+      Game.saveGame(trainer, true);
 
       if (!client.isClosed()) {
         client.close();

@@ -50,7 +50,7 @@ public class Game {
           listPokedex();
           break;
         case 9:
-          saveGame(trainer);
+          saveGame(trainer, false);
           break;
         case 0:
         default:
@@ -196,35 +196,37 @@ public class Game {
    * Save the game to a file in the saves folder
    * 
    * @param trainer
+   * @param force   Force the save even if a saved game with the same name already
    */
-  public static Trainer saveGame(Trainer trainer) {
+  public static Trainer saveGame(Trainer trainer, boolean force) {
     System.out.println();
+    boolean canSave = force;
 
-    boolean canSave = false;
-
-    if (!Serializer.fileExists(trainer.getName())) {
-      canSave = true;
-    } else {
-      System.out.println("A saved game with the same name already exists.");
-      System.out.print("Do you want to overwrite the saved game? (y/n) ");
-      String answer;
-      do {
-        answer = Main.reader.nextLine();
-        if (answer.toLowerCase().equals("y")) {
-          canSave = true;
-          break;
-        } else {
-          System.out.println("Saving game aborted");
-          return (Trainer) Serializer.deserialize(trainer.getName());
-        }
-      } while (answer != "y" || answer != "n");
+    if (!force) {
+      if (!Serializer.fileExists(trainer.getName())) {
+        canSave = true;
+      } else {
+        System.out.println("A saved game with the same name already exists.");
+        System.out.print("Do you want to overwrite the saved game? (y/n) ");
+        String answer;
+        do {
+          answer = Main.reader.nextLine();
+          if (answer.toLowerCase().equals("y")) {
+            canSave = true;
+            break;
+          } else {
+            System.out.println("Saving game aborted");
+            return (Trainer) Serializer.deserialize(trainer.getName());
+          }
+        } while (answer != "y" || answer != "n");
+      }
     }
 
     // If no saved game with the same name exists, or if the user wants to overwrite
     if (canSave) {
       System.out.println("Saving game...");
       try {
-        Thread.sleep(1300);
+        Thread.sleep(900);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
