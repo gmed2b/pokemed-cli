@@ -40,7 +40,7 @@ public class Client implements Runnable {
 
         ObjectStream object;
         while ((object = (ObjectStream) in.readObject()) != null) {
-          // Main.log(object, "MSG");
+          Main.log(object, "MSG");
           Commands cmd = object.getCmd();
           Object data = object.getO();
 
