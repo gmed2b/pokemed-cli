@@ -9,6 +9,7 @@ import java.util.ArrayList;
  * Represents a Pokemon
  */
 public class Pokemon implements Serializable {
+  private int id;
   private String name;
   private int hp;
   private int attack;
@@ -19,6 +20,7 @@ public class Pokemon implements Serializable {
   /**
    * Constructor
    * 
+   * @param id             The Pokemon's id
    * @param name           The Pokemon's name
    * @param hp             The Pokemon's HP
    * @param attack         The Pokemon's attack
@@ -26,7 +28,8 @@ public class Pokemon implements Serializable {
    * @param evolutionStage The Pokemon's evolution stage
    * @param evolution      The Pokemon's evolution
    */
-  public Pokemon(String name, int hp, int attack, PokemonType type, int evolutionStage) {
+  public Pokemon(int id, String name, int hp, int attack, PokemonType type, int evolutionStage) {
+    setId(id);
     setName(name);
     setHp(hp);
     setAttack(attack);
@@ -154,6 +157,14 @@ public class Pokemon implements Serializable {
   // ------------------
   // Getters and setters
   // ------------------
+
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
 
   public String getName() {
     return name;

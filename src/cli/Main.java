@@ -8,6 +8,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
+import guigui.Dresseur;
+import guigui.GameGUI;
+
 public class Main {
 
   static String ASSETS_PATH = "../assets";
@@ -26,14 +29,13 @@ public class Main {
 
     // Choose a server
     System.out.println("Choose a server:");
-    System.out.println("1. gelk.fr");
-    System.out.println("0. local");
+    System.out.println("1. local");
+    System.out.println("2. gelk.fr");
     int serverChoice = getIntInput();
     switch (serverChoice) {
-      case 1:
+      case 2:
         Main.SERVER_IP = "158.178.205.119";
         break;
-      case 0:
       default:
         break;
     }
@@ -70,8 +72,24 @@ public class Main {
       trainer = createNewTrainer();
     }
 
-    Game game = new Game(trainer);
-    game.start();
+    // Choose game interface
+    System.out.println("Choose a game interface:");
+    System.out.println("1. CLI");
+    System.out.println("2. GUI");
+    int interfaceChoice = getIntInput();
+    switch (interfaceChoice) {
+      case 1:
+        Game game = new Game(trainer);
+        game.start();
+        break;
+      case 2:
+        Dresseur dresseur = new Dresseur(trainer.getName(), trainer.getPokemons());
+        GameGUI gameGUI = new GameGUI();
+        gameGUI.start(dresseur);
+        break;
+      default:
+        break;
+    }
 
     System.out.println();
   }

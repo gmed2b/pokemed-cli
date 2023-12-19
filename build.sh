@@ -13,6 +13,10 @@ cd "$src_dir"
 # For each folder in the source directory
 for folder in */; do
     javac "$folder"*.java -d ../"$dist_dir"
+    # if folder is guigui, copy assets folder inside to dist/folder
+    if [ "$folder" == "guigui/" ]; then
+        cp -r "$folder"assets ../"$dist_dir"/"$folder"
+    fi
 done
 
 # Go back to the root directory

@@ -39,13 +39,14 @@ public class Pokedex {
         // Create a new Pokemon for each line and add it to the Pokedex
         String[] data = line.split(",");
 
-        String name = data[0];
-        int hp = Integer.parseInt(data[1]);
-        int attack = Integer.parseInt(data[2]);
-        String type = data[3];
-        int evolutionStage = Integer.parseInt(data[4]);
+        int id = Integer.parseInt(data[0]);
+        String name = data[1];
+        int hp = Integer.parseInt(data[2]);
+        int attack = Integer.parseInt(data[3]);
+        String type = data[4];
+        int evolutionStage = Integer.parseInt(data[5]);
 
-        Pokemon pokemon = new Pokemon(name, hp, attack, PokemonType.valueOf(type.toUpperCase()), evolutionStage);
+        Pokemon pokemon = new Pokemon(id, name, hp, attack, PokemonType.valueOf(type.toUpperCase()), evolutionStage);
         pokedex.add(pokemon);
       }
     }
@@ -60,8 +61,8 @@ public class Pokedex {
         // Create a new Pokemon for each line and add it to the Pokedex
         String[] data = line.split(",");
 
-        String name = data[0];
-        String evolutionString = data[5];
+        String name = data[1];
+        String evolutionString = data[6];
         ArrayList<Pokemon> evolution = new ArrayList<>();
         if (!evolutionString.equals("NULL")) {
           String[] evolutionNames = evolutionString.split(";");
