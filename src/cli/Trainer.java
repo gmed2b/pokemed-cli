@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
+import lib.PokemonCaughtResultEnum;
 import server.ObjectStream;
 import server.Server.Commands;
 
@@ -77,28 +78,27 @@ public class Trainer implements Serializable {
    * Catch a pokemon randomly
    * 
    * @param pokemon The pokemon to catch
+   * @return A enum representing the result of the catch.
    */
-  public void catchPokemon(Pokemon pokemon) {
+  public PokemonCaughtResultEnum catchPokemon(Pokemon pokemon) {
     // 75% chance to catch the pokemon
     if (Math.random() < 0.75) {
-      System.out.println("You caught " + pokemon);
-
-      // Add the pokemon to the trainer's pokemons (if possible)
       try {
         addPokemon(pokemon);
-
-        // 60% chance to drop a rare candy of the pokemon's type
-        if (Math.random() < 0.60) {
-          RareCandy rareCandy = new RareCandy(pokemon.getType());
-          rareCandies.add(rareCandy);
-          System.out.println("The pokemon dropped a rare candy !");
+        System.out.println("You caught " + pokemon);
+        if (getRareCandyRandomly(60, pokemon.getType()) != null) {
+          System.out.println("You got a rare candy!");
+          return PokemonCaughtResultEnum.SPECIAL;
         }
+        return PokemonCaughtResultEnum.SUCCESS;
       } catch (UnsupportedOperationException e) {
         System.out.println("You can't have more than 6 pokemons");
         System.out.println("The pokemon escaped");
+        return PokemonCaughtResultEnum.FAILED;
       }
     } else {
       System.out.println("The pokemon escaped");
+      return PokemonCaughtResultEnum.ESCAPED;
     }
   }
 
@@ -123,6 +123,20 @@ public class Trainer implements Serializable {
       throw new UnsupportedOperationException("A trainer can't have more than 6 pokemons");
     }
     pokemons.add(pokemon);
+  }
+
+  public RareCandy getRareCandyRandomly(int percentage, PokemonType type) {
+    if (percentage < 0 || percentage > 100) {
+      throw new IllegalArgumentException("Percentage must be between 0 and 100");
+    }
+    // % chance to drop a rare candy of the pokemon's type
+    if (Math.random() < percentage / 100.0) {
+      RareCandy rareCandy = new RareCandy(type);
+      rareCandies.add(rareCandy);
+      return rareCandy;
+    } else {
+      return null;
+    }
   }
 
   // ------------------

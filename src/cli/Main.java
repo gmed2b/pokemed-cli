@@ -14,6 +14,8 @@ public class Main {
   static String POKEMONS_PATH = ASSETS_PATH + "/pokemons.csv";
   static String SAVES_PATH = "../saves/";
 
+  static String SERVER_IP = "localhost";
+
   static Pokedex pokedex = new Pokedex();
   static Scanner reader = new Scanner(System.in);
 
@@ -21,6 +23,21 @@ public class Main {
     System.out.println();
 
     Trainer trainer = null;
+
+    // Choose a server
+    System.out.println("Choose a server:");
+    System.out.println("1. gelk.fr");
+    System.out.println("0. local");
+    int serverChoice = getIntInput();
+    switch (serverChoice) {
+      case 1:
+        Main.SERVER_IP = "158.178.205.119";
+        break;
+      case 0:
+      default:
+        break;
+    }
+    System.out.println();
 
     // Check if there is a saved game
     File[] savedGame = Game.getSavedGame();

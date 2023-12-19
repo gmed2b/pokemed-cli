@@ -129,20 +129,25 @@ public class ClientHandler implements Runnable {
     ObjectStream data = (ObjectStream) me.action.getO();
     Commands cmd = data.getCmd();
 
-    if (cmd.equals(Commands.ATTACK)) {
-      Pokemon myPokemon = me.currentPokemon;
-      Pokemon enemyPokemon = opponent.currentPokemon;
-      int damage_dealt = me.trainer.attack(myPokemon, enemyPokemon);
-      Server.log(me.trainer.getName() + "'s " + myPokemon.getName() + " dealt " + damage_dealt + " damage to "
-          + opponent.trainer.getName() + "'s "
-          + enemyPokemon.getName());
+    if (me.currentPokemon.getHp() > 0) {
+      if (cmd.equals(Commands.ATTACK)) {
+        Pokemon myPokemon = me.currentPokemon;
+        Pokemon enemyPokemon = opponent.currentPokemon;
+        int damage_dealt = me.trainer.attack(myPokemon, enemyPokemon);
+        Server.log(me.trainer.getName() + "'s " + myPokemon.getName() + " dealt " + damage_dealt + " damage to "
+            + opponent.trainer.getName() + "'s "
+            + enemyPokemon.getName());
 
-      // Get index of enemy pokemon
-      int enemyPokemonIndex = opponent.trainer.getPokemons().indexOf(enemyPokemon);
-      // Send to enemy client that their pokemon took damage
-      Pair<Integer, Integer> newPokemonEnemy = new Pair<>(enemyPokemonIndex, damage_dealt);
-      opponent.send(new ObjectStream(Commands.ATTACK, newPokemonEnemy));
+        // Get index of enemy pokemon
+        int enemyPokemonIndex = opponent.trainer.getPokemons().indexOf(enemyPokemon);
+        // Send to enemy client that their pokemon took damage
+        Pair<Integer, Integer> newPokemonEnemy = new Pair<>(enemyPokemonIndex, damage_dealt);
+        opponent.send(new ObjectStream(Commands.ATTACK, newPokemonEnemy));
+      }
+    } else {
+      me.send(new ObjectStream(Commands.BATTLE_END, false));
     }
+
   }
 
   private boolean checkBattleResult() {

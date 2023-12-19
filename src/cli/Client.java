@@ -14,6 +14,7 @@ import server.Server.Commands;
 public class Client implements Runnable {
 
   private Trainer trainer;
+  private Pokemon currentPokemon;
   private Socket client;
   private ObjectOutputStream out;
   private ObjectInputStream in;
@@ -21,7 +22,7 @@ public class Client implements Runnable {
   public Client(Trainer trainer) {
     try {
       this.trainer = trainer;
-      client = new Socket("158.178.205.119", Server.PORT);
+      client = new Socket(Main.SERVER_IP, Server.PORT);
       out = new ObjectOutputStream(client.getOutputStream());
       in = new ObjectInputStream(client.getInputStream());
     } catch (Exception e) {
@@ -46,9 +47,9 @@ public class Client implements Runnable {
           if (cmd.equals(Commands.INIT_TRAINER)) {
             if ((boolean) data) {
               System.out.println("Connected to server!");
-              Pokemon choosePokemon = trainer.choosePokemon();
+              currentPokemon = trainer.choosePokemon();
 
-              sendToServer(new ObjectStream(Commands.IN_QUEUE, choosePokemon));
+              sendToServer(new ObjectStream(Commands.IN_QUEUE, currentPokemon));
             }
           }
 
@@ -65,6 +66,12 @@ public class Client implements Runnable {
           if (cmd.equals(Commands.BATTLE_END)) {
             if ((boolean) data) {
               System.out.println("You won!");
+              if (currentPokemon != null) {
+                RareCandy rareCandyRandomly = trainer.getRareCandyRandomly(100, currentPokemon.getType());
+                if (rareCandyRandomly != null) {
+                  System.out.println("You got a rare candy of type " + rareCandyRandomly.getType() + "!");
+                }
+              }
             } else {
               System.out.println("You lost!");
             }
