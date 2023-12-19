@@ -33,7 +33,7 @@ public class ClientHandler implements Runnable {
 
       ObjectStream object;
       while ((object = (ObjectStream) this.in.readObject()) != null) {
-        Server.log(object, "NEW_MESSAGES");
+        // Server.log(object, "NEW_MESSAGES");
         Commands cmd = object.getCmd();
         Object data = object.getO();
 
@@ -146,6 +146,7 @@ public class ClientHandler implements Runnable {
       }
     } else {
       me.send(new ObjectStream(Commands.BATTLE_END, false));
+      opponent.send(new ObjectStream(Commands.BATTLE_END, true));
     }
 
   }
