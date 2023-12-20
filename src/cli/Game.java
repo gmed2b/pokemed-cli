@@ -257,6 +257,12 @@ public class Game {
   public static File[] getSavedGame() {
     try {
       File folder = new File(Main.SAVES_PATH);
+
+      // If the saves folder doesn't exist, create it
+      if (!folder.exists()) {
+        folder.mkdir();
+      }
+
       File[] listOfFiles = folder.listFiles();
 
       if (listOfFiles.length == 0) {
