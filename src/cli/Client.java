@@ -101,7 +101,7 @@ public class Client implements Runnable {
             }
 
             sendToServer(new ObjectStream(Commands.NEXT_TURN, true));
-            // displayMenuBattle();
+
           }
 
           if (cmd.equals(Commands.NEXT_TURN)) {
