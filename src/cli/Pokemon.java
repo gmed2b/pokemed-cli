@@ -16,6 +16,7 @@ public class Pokemon implements Serializable {
   private PokemonType type;
   private int evolutionStage;
   private ArrayList<Pokemon> evolution = new ArrayList<>();
+  private String evolutionName;
 
   /**
    * Constructor
@@ -27,15 +28,24 @@ public class Pokemon implements Serializable {
    * @param type           The Pokemon's type
    * @param evolutionStage The Pokemon's evolution stage
    * @param evolution      The Pokemon's evolution
+   * @param evolutionName  The Pokemon's evolution name
    */
-  public Pokemon(int id, String name, int hp, int attack, PokemonType type, int evolutionStage) {
+  public Pokemon(int id, String name, int hp, int attack, PokemonType type, int evolutionStage,
+      ArrayList<Pokemon> evolution, String evolutionName) {
     setId(id);
     setName(name);
     setHp(hp);
     setAttack(attack);
     setType(type);
     setEvolutionStage(evolutionStage);
-    setEvolution(evolution);
+    if (evolution != null)
+      setEvolution(evolution);
+    setEvolutionName(evolutionName);
+  }
+
+  public Pokemon(Pokemon pokemon) {
+    this(pokemon.getId(), pokemon.getName(), pokemon.getHp(), pokemon.getAttack(), pokemon.getType(),
+        pokemon.getEvolutionStage(), pokemon.getEvolution(), pokemon.getEvolutionName());
   }
 
   @Override
@@ -50,34 +60,48 @@ public class Pokemon implements Serializable {
    * 
    * @param amount The amount of candy to eat
    */
-  public void eat(int amount) {
+  public void eatCandy(int amount) {
     if (amount < 0) {
       throw new IllegalArgumentException("Amount must be greater than 0");
     }
 
     // Check if the trainer have enough rare candies
-    if (amount > 5) {
+    if (amount >= 5) {
       String answser;
       System.out.println("You have more than 5 candies, you can evolve your pokemon.");
       System.out.print("Do you want to evolve your pokemon ? (y/n) ");
       do {
         answser = Main.reader.nextLine();
-        // If yes, evolve the pokemon, remove 5 candies and eat the rest
+        // If yes, evolve the pokemon, remove 5 candies
+        if (answser.equals("y")) {
+          try {
+            evolve();
+            amount -= 5;
+            break;
+          } catch (UnsupportedOperationException e) {
+            System.out.println(e.getMessage());
+            return;
+          }
+        } else {
+          break;
+        }
       } while (answser != "y" || answser != "n");
-      return;
     }
 
-    double increaseFactor = amount * 0.1; // Adjust the factor as needed
-    int hpIncrease = (int) (getHp() * increaseFactor);
-    int attackIncrease = (int) (getAttack() * increaseFactor);
+    if (amount > 0) {
+      double increaseFactor = amount * 0.1; // Adjust the factor as needed
+      int hpIncrease = (int) (getHp() * increaseFactor);
+      int attackIncrease = (int) (getAttack() * increaseFactor);
 
-    setHp(getHp() + hpIncrease);
-    setAttack(getAttack() + attackIncrease);
+      setHp(getHp() + hpIncrease);
+      setAttack(getAttack() + attackIncrease);
 
-    System.out.println("Eating candy ...");
-    System.out.println(String.format("HP: %d (+%d)", getHp(), hpIncrease));
-    System.out.println(String.format("Attack: %d (+%d)", getAttack(), attackIncrease));
-    System.out.println();
+      System.out.println("Eating candy ...");
+      System.out.println(String.format("HP: %d (+%d)", getHp(), hpIncrease));
+      System.out.println(String.format("Attack: %d (+%d)", getAttack(), attackIncrease));
+    }
+
+    Main.pressToContinue();
   }
 
   /**
@@ -86,14 +110,28 @@ public class Pokemon implements Serializable {
    * @throws UnsupportedOperationException If the Pokemon cannot evolve
    */
   public void evolve() {
-    System.out.println(getName() + " is evolving ...");
+    String oldPokemonName = getName();
+    System.out.println(oldPokemonName + " is evolving ...");
     try {
       Thread.sleep(1000);
+
+      // Copy the evolution to the current pokemon
+      Pokemon evolution = getEvolution().get(0);
+      if (evolution != null) {
+        setId(evolution.getId());
+        setName(evolution.getName());
+        setHp(evolution.getHp());
+        setAttack(evolution.getAttack());
+        setType(evolution.getType());
+        setEvolutionStage(evolution.getEvolutionStage());
+        setEvolution(evolution.getEvolution());
+      }
+
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
     System.out.println("Congratulations !");
-    System.out.println(getName() + " evolved into " + getEvolution().get(0).getName() + " !");
+    System.out.println(oldPokemonName + " evolved into " + getName() + " !");
   }
 
   /**
@@ -108,7 +146,10 @@ public class Pokemon implements Serializable {
       wildPokemon = Pokedex.getPokedex().get(random);
     } while (wildPokemon.getEvolutionStage() > 1);
 
-    return wildPokemon;
+    Pokemon newPokemon = new Pokemon(wildPokemon.getId(), wildPokemon.getName(), wildPokemon.getHp(),
+        wildPokemon.getAttack(), wildPokemon.getType(), wildPokemon.getEvolutionStage(), wildPokemon.getEvolution(),
+        wildPokemon.getEvolutionName());
+    return newPokemon;
   }
 
   /**
@@ -143,7 +184,10 @@ public class Pokemon implements Serializable {
         System.out.print("How many candies do you want to eat ? ");
         int amount = Main.getIntInput();
         try {
-          eat(amount);
+          eatCandy(amount);
+          for (int i = 0; i < amount; i++) {
+            rareCandies.remove(sameTypeCandies.get(i));
+          }
         } catch (IllegalArgumentException e) {
           System.out.println(e.getMessage());
         }
@@ -152,6 +196,11 @@ public class Pokemon implements Serializable {
       default:
         break;
     }
+  }
+
+  // Method to add a Pokemon to the evolution list
+  public void addEvolution(Pokemon evolvedForm) {
+    this.evolution.add(evolvedForm);
   }
 
   // ------------------
@@ -222,6 +271,14 @@ public class Pokemon implements Serializable {
 
   public void setEvolution(ArrayList<Pokemon> evolution) {
     this.evolution = evolution;
+  }
+
+  public String getEvolutionName() {
+    return evolutionName;
+  }
+
+  public void setEvolutionName(String evolutionName) {
+    this.evolutionName = evolutionName;
   }
 
 }

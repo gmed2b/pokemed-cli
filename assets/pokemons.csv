@@ -150,3 +150,4 @@ id,name,hp,attack,type,evolutionStage,evolution
 149,Dracolosse,91,134,DRAGON,3,NULL
 150,Mewtwo,106,110,PSYCHIC,1,NULL
 151,Mew,100,100,PSYCHIC,1,NULL
+125,Arceus,169,142,NORMAL,1,NULL

@@ -52,6 +52,14 @@ public class Game {
         case 9:
           saveGame(trainer, false);
           break;
+        case 69:
+          // GET 99 RARE CANDIES
+          for (int i = 0; i < 99; i++) {
+            trainer.getRareCandies().add(new RareCandy(PokemonType.NORMAL));
+          }
+          trainer.addPokemon(Pokedex.getPokemonByName("Arceus"));
+          trainer.addPokemon(Pokedex.getPokemonByName("Rattata"));
+          break;
         case 0:
         default:
           try {

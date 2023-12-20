@@ -86,7 +86,7 @@ public class Trainer implements Serializable {
       try {
         addPokemon(pokemon);
         System.out.println("You caught " + pokemon);
-        if (getRareCandyRandomly(60, pokemon.getType()) != null) {
+        if (getRareCandyRandomly(69, pokemon.getType()) != null) {
           System.out.println("You got a rare candy!");
           return PokemonCaughtResultEnum.SPECIAL;
         }
